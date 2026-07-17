@@ -97,33 +97,6 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 .s-pill  .frame{border-radius:999px;}
 
 /* stretcher-bar label, appears on hover */
-.frame .plate{
-  position:absolute;left:0;right:0;bottom:0;
-  padding:26px 14px 12px;
-  z-index:2;
-  display:flex;align-items:flex-end;justify-content:space-between;gap:8px;
-  background:linear-gradient(to top, rgba(6,5,9,.86), transparent);
-  opacity:0;transform:translateY(8px);
-  transition:opacity .4s ease, transform .4s var(--ease);
-  pointer-events:none;
-}
-.frame:hover .plate{opacity:1;transform:translateY(0);}
-.plate .what{font-size:12px;letter-spacing:.02em;}
-.plate .no{
-  font-family:'IBM Plex Mono',monospace;font-size:10px;
-  color:var(--ochre);letter-spacing:.08em;
-}
-/* the mood tells you its colour */
-.frame[data-cat="arrival"] .plate .no{color:var(--ochre);}
-.frame[data-cat="create"]  .plate .no{color:var(--viridian);}
-.frame[data-cat="moment"]  .plate .no{color:var(--vermilion);}
-.frame[data-cat="detail"]  .plate .no{color:#7f9bf0;}
-
-/* filtered out — not deleted, just gone dry */
-.cell.ghost .frame{opacity:.10;filter:grayscale(1) brightness(.6);transform:rotate(var(--rot,0deg)) scale(.93);}
-.cell.ghost .frame:hover{transform:rotate(var(--rot,0deg)) scale(.93);box-shadow:none;}
-.cell.ghost{pointer-events:none;}
-
 /* ripple shove */
 @keyframes shove{
   0%{transform:translate(0,0) rotate(var(--rot,0deg)) scale(1);}
@@ -158,53 +131,35 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 .mark i{font-weight:400;color:var(--ochre);}
 .rail-right{display:flex;align-items:center;gap:10px;}
 
-.dock{
-  display:flex;align-items:center;gap:4px;
-  background:rgba(19,16,25,.78);
-  backdrop-filter:blur(18px);
-  border:1px solid rgba(239,231,216,.10);
-  border-radius:999px;
-  padding:5px;
+/* the door out — bottom right, an arch that recalls the frame shapes */
+.door{
+  position:fixed;right:24px;bottom:24px;z-index:75;
+  width:58px;height:74px;
+  display:grid;place-items:center;
+  background:rgba(19,16,25,.72);
+  backdrop-filter:blur(14px);
+  border:1px solid rgba(239,231,216,.14);
+  border-radius:50% 50% 6px 6px / 34% 34% 6px 6px;
+  color:var(--gesso);
+  transition:transform .4s var(--ease), background .3s, border-color .3s, box-shadow .4s;
 }
-.swatch{
-  display:flex;align-items:center;gap:7px;
-  padding:7px 13px;border-radius:999px;
-  font-size:12px;letter-spacing:.01em;color:var(--gesso-dim);
-  transition:color .25s, background .25s;
-  white-space:nowrap;
+.door::after{
+  content:"Exit";
+  position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);
+  font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--gesso-dim);
+  opacity:0;transition:opacity .3s;
 }
-.swatch .dab{
-  width:11px;height:11px;border-radius:52% 48% 46% 54% / 50% 44% 56% 50%;
-  transition:transform .3s var(--ease), box-shadow .3s;
+.door:hover{
+  transform:translateY(-4px);
+  background:var(--ochre);
+  color:var(--ink);
+  border-color:var(--ochre);
+  box-shadow:0 18px 30px -10px rgba(230,166,43,.4);
 }
-.swatch[data-cat="all"] .dab{background:var(--gesso);}
-.swatch[data-cat="arrival"] .dab{background:var(--ochre);}
-.swatch[data-cat="create"] .dab{background:var(--viridian);}
-.swatch[data-cat="moment"] .dab{background:var(--vermilion);}
-.swatch[data-cat="detail"] .dab{background:var(--ultramarine);}
-.swatch:hover{color:var(--gesso);}
-.swatch.on{color:var(--ink);background:var(--gesso);}
-.swatch.on .dab{transform:scale(1.3);box-shadow:0 0 0 2px rgba(11,10,14,.25);}
-
-.find{
-  display:flex;align-items:center;gap:9px;
-  background:rgba(19,16,25,.78);
-  backdrop-filter:blur(18px);
-  border:1px solid rgba(239,231,216,.10);
-  border-radius:999px;padding:9px 16px;
-  transition:border-color .3s, width .3s;
-}
-.find:focus-within{border-color:var(--ochre);}
-.find svg{opacity:.6;flex:none;}
-.find input{
-  background:none;border:none;outline:none;color:var(--gesso);
-  font:inherit;font-size:12.5px;width:150px;
-}
-.find input::placeholder{color:var(--gesso-dim);}
-.find .count{
-  font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ochre);
-  white-space:nowrap;min-width:0;
-}
+.door:hover::after{opacity:1;}
+.door svg{width:22px;height:22px;transition:transform .4s var(--ease);}
+.door:hover svg{transform:translateX(2px);}
 
 /* compass — where you are on a plane with no edges */
 .compass{
@@ -369,21 +324,15 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 
 <header class="rail">
   <div class="mark">sip <i>&amp; paint</i></div>
-  <div class="rail-right">
-    <div class="dock" id="dock">
-      <button class="swatch on" data-cat="all"><span class="dab"></span>All</button>
-      <button class="swatch" data-cat="arrival"><span class="dab"></span>Arrivals</button>
-      <button class="swatch" data-cat="create"><span class="dab"></span>Painting</button>
-      <button class="swatch" data-cat="moment"><span class="dab"></span>Candid</button>
-      <button class="swatch" data-cat="detail"><span class="dab"></span>Details</button>
-    </div>
-    <div class="find">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-      <input id="find" type="text" placeholder="brush, toast, laughing…" autocomplete="off">
-      <span class="count" id="count"></span>
-    </div>
-  </div>
 </header>
+
+<button class="door" id="door" aria-label="Return to the top">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 3h9a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6"/>
+    <path d="M14 12H3"/>
+    <path d="M6 9l-3 3 3 3"/>
+  </svg>
+</button>
 
 <div class="compass">
   <div class="compass-box"><div class="pip" id="pip"></div></div>
@@ -421,30 +370,11 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
    1. THE PHOTOS  — edit here and nowhere else.
    cat: arrival | create | moment | detail
    ============================================================ */
-const CATS = ["moment","moment","moment","moment","moment","moment","create","create","create","moment",
-              "moment","detail","create","arrival","moment","detail","create","moment","arrival","moment",
-              "create","moment","detail","create","moment","arrival","detail","moment","create","detail",
-              "moment","create","detail","moment","arrival","create","moment","detail","create","moment",
-              "create","detail","moment","arrival","create","moment","detail","create","moment","arrival",
-              "detail","moment"];
-const WORDS = {
-  arrival:"arrival welcome entrance easels room before start guests coats hello",
-  create:"painting brush canvas creating focus mixing colour palette technique stroke",
-  moment:"candid laughing reaction smile friends toast fun surprise applause wine glass",
-  detail:"detail group table decor palette wine glass close up signature hands"
-};
-const SAYS = {
-  arrival:"Doors open, easels waiting",
-  create:"Brush down, world off",
-  moment:"Caught mid-laugh",
-  detail:"The small stuff we kept"
-};
-const PHOTOS = CATS.map((cat,i)=>({
+/* edit the count if you add or remove photos in the images/ folder */
+const PHOTO_COUNT = 52;
+const PHOTOS = Array.from({length:PHOTO_COUNT}, (_,i)=>({
   no:String(i+1).padStart(2,"0"),
-  cat,
-  src:`images/photo-${String(i+1).padStart(2,"0")}.jpg`,
-  what:SAYS[cat],
-  kw:WORDS[cat]
+  src:`images/photo-${String(i+1).padStart(2,"0")}.jpg`
 }));
 document.getElementById("pcount").textContent = PHOTOS.length + " photographs";
 
@@ -493,7 +423,7 @@ function build(){
         const f = document.createElement("div");
         f.className = "frame";
         f.style.setProperty("--rot", (Math.sin(i*13.37)*1.6).toFixed(2)+"deg");
-        f.innerHTML = `<img alt="" loading="lazy" decoding="async"><div class="plate"><span class="what"></span><span class="no"></span></div>`;
+        f.innerHTML = `<img alt="" loading="lazy" decoding="async">`;
         cell.appendChild(f);
         tile.appendChild(cell);
         cells.push(cell);
@@ -508,7 +438,6 @@ function build(){
       fill(tile);
     }
   }
-  applyFilter();
 }
 
 /* hand a tile a fresh run of photos. Only ever called while the tile
@@ -516,23 +445,20 @@ function build(){
    in the same place twice. */
 function fill(tile){
   tile.cells.forEach((cell,i)=>{
-    const p = PHOTOS[(feed + i) % PHOTOS.length];
+    const idx = (feed + i) % PHOTOS.length;
+    const p = PHOTOS[idx];
     const f = cell.querySelector(".frame");
     const img = f.querySelector("img");
-    cell.dataset.idx = (feed + i) % PHOTOS.length;
-    f.dataset.cat = p.cat;
+    cell.dataset.idx = idx;
     f.dataset.no = p.no;
     f.classList.remove("blank");
     f.style.setProperty("--tint", TINTS[i % TINTS.length]);
-    f.querySelector(".what").textContent = p.what;
-    f.querySelector(".no").textContent = p.no;
-    img.alt = p.what;
+    img.alt = "Photograph " + p.no;
     img.onerror = ()=>{ img.style.display="none"; f.classList.add("blank"); };
     img.style.display = "";
     img.src = p.src;
   });
   feed = (feed + PACK.length) % PHOTOS.length;
-  if(typeof applyFilter === "function") applyFilter(tile);
 }
 
 /* ============================================================
@@ -630,6 +556,7 @@ sizeCanvas();
 const INKS = ["#d94f30","#e6a62b","#3355b4","#1f7d63","#7a2b4a","#efe7d8"];
 let inkI = 0, hue = INKS[0];
 let mx=0, my=0, lx=0, ly=0, hasBrush=false, width=0;
+let paintActivity = 0; /* frames since anything wet touched the canvas */
 const ripples = [];
 
 if(matchMedia("(hover:hover)").matches && !matchMedia("(prefers-reduced-motion:reduce)").matches){
@@ -647,11 +574,14 @@ if(matchMedia("(hover:hover)").matches && !matchMedia("(prefers-reduced-motion:r
 }
 
 function brush(){
-  /* the whole canvas dries a little every frame */
+  /* the whole canvas dries a little every frame — fast enough to actually
+     hit zero, then a hard clear once the hand has been still for a beat. */
   ctx.globalCompositeOperation = "destination-out";
-  ctx.fillStyle = "rgba(0,0,0,.055)";
+  ctx.fillStyle = "rgba(0,0,0,.10)";
   ctx.fillRect(0,0,innerWidth,innerHeight);
   ctx.globalCompositeOperation = "source-over";
+
+  let wet = false;
 
   if(hasBrush){
     const dx = mx-lx, dy = my-ly;
@@ -661,6 +591,7 @@ function brush(){
     width += (target - width)*0.25;
 
     if(speed > 0.6){
+      wet = true;
       const ang = Math.atan2(dy,dx);
       ctx.lineCap = "round";
       /* three bristles, slightly out of register — that's what reads as paint */
@@ -696,7 +627,14 @@ function brush(){
     ctx.stroke();
     ctx.globalAlpha = 1;
     if(r.a < 0.05 || r.r > Math.hypot(innerWidth,innerHeight)) ripples.splice(i,1);
+    else wet = true;
   }
+
+  /* if nothing has been wet for ~1s, wipe the canvas completely clean */
+  if(wet) paintActivity = 0;
+  else paintActivity++;
+  if(paintActivity === 60) ctx.clearRect(0,0,innerWidth,innerHeight);
+
   requestAnimationFrame(brush);
 }
 
@@ -734,46 +672,7 @@ function shove(x,y){
 }
 
 /* ============================================================
-   5. FILTER + FIND — nothing is removed, it just dries out
-   ============================================================ */
-let cat = "all", q = "";
-const count = document.getElementById("count");
-
-function applyFilter(only){
-  const scope = only ? only.cells : document.querySelectorAll(".cell");
-  let live = 0, total = 0;
-  scope.forEach(cell=>{
-    const p = PHOTOS[cell.dataset.idx];
-    if(!p) return;
-    const okCat = cat==="all" || p.cat===cat;
-    const okQ = q==="" || (p.what+" "+p.kw+" "+p.cat).toLowerCase().includes(q);
-    cell.classList.toggle("ghost", !(okCat && okQ));
-  });
-  if(!only){
-    PHOTOS.forEach(p=>{
-      const okCat = cat==="all" || p.cat===cat;
-      const okQ = q==="" || (p.what+" "+p.kw+" "+p.cat).toLowerCase().includes(q);
-      total++; if(okCat && okQ) live++;
-    });
-    count.textContent = (cat==="all" && q==="") ? "" : live+"/"+total;
-  }
-}
-
-document.querySelectorAll(".swatch").forEach(b=>{
-  b.addEventListener("click", ()=>{
-    document.querySelectorAll(".swatch").forEach(x=>x.classList.remove("on"));
-    b.classList.add("on");
-    cat = b.dataset.cat;
-    applyFilter();
-  });
-});
-document.getElementById("find").addEventListener("input", e=>{
-  q = e.target.value.trim().toLowerCase();
-  applyFilter();
-});
-
-/* ============================================================
-   6. LOOK CLOSER
+   5. LOOK CLOSER
    ============================================================ */
 const look = document.getElementById("look");
 const lookImg = document.getElementById("look-img");
@@ -782,15 +681,20 @@ function show(i){
   at = (i + PHOTOS.length) % PHOTOS.length;
   const p = PHOTOS[at];
   lookImg.src = p.src;
-  lookImg.alt = p.what;
-  document.getElementById("look-what").textContent = p.what;
-  document.getElementById("look-no").textContent = "No. " + p.no + " · " + p.cat;
+  lookImg.alt = "Photograph " + p.no;
+  document.getElementById("look-what").textContent = "Photograph " + p.no;
+  document.getElementById("look-no").textContent = p.no + " / " + PHOTOS.length;
   look.classList.add("open");
 }
-stage.addEventListener("click", e=>{
+/* click any photo to open it. Use pointerup so it fires reliably
+   even after the pointer capture from dragging. */
+stage.addEventListener("pointerup", e=>{
   if(moved > 8) return;              /* that was a drag, not a click */
-  const cell = e.target.closest(".cell");
-  if(!cell || cell.classList.contains("ghost")) return;
+  /* pointer capture reroutes e.target to the stage during drag, so ask
+     the document who is actually under the cursor right now. */
+  const hit = document.elementFromPoint(e.clientX, e.clientY);
+  const cell = hit && hit.closest(".cell");
+  if(!cell) return;
   show(+cell.dataset.idx);
 });
 document.getElementById("look-x").addEventListener("click", ()=>look.classList.remove("open"));
@@ -808,12 +712,27 @@ addEventListener("keydown", e=>{
    7. GO
    ============================================================ */
 const hero = document.getElementById("hero");
+const door = document.getElementById("door");
+door.style.opacity = 0;
+door.style.pointerEvents = "none";
+door.style.transition = "opacity .5s ease, transform .4s var(--ease), background .3s, border-color .3s, box-shadow .4s";
+
 function walkIn(){
   hero.classList.add("gone");
   tX -= 90; tY -= 60;
+  setTimeout(()=>{ door.style.opacity = 1; door.style.pointerEvents = "auto"; }, 500);
   removeEventListener("wheel", walkIn);
 }
+function walkOut(){
+  hero.classList.remove("gone");
+  /* ease the plane back to the origin */
+  tX = 0; tY = 0;
+  door.style.opacity = 0; door.style.pointerEvents = "none";
+  /* rearm the wheel-to-enter shortcut once the hero is up again */
+  addEventListener("wheel", walkIn, {once:true, passive:true});
+}
 document.getElementById("enter").addEventListener("click", walkIn);
+door.addEventListener("click", walkOut);
 addEventListener("wheel", walkIn, {once:true, passive:true});
 
 let rt;
