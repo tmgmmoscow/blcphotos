@@ -3,577 +3,827 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sip & Paint — The Gallery</title>
+<title>Sip &amp; Paint · The Wet Room</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@300;400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --plum:#1c1130;
-    --plum-2:#271a45;
-    --wine:#4a2d78;
-    --wine-light:#6d3fab;
-    --gold:#c9a227;
-    --gold-soft:#e8c766;
-    --cream:#f4ead9;
-    --cream-dim:#cdbfa9;
-    --sage:#8a76b0;
-    --rose:#a978c1;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{
-    background:var(--plum);
-    color:var(--cream);
-    font-family:'Work Sans',sans-serif;
-    font-weight:300;
-    overflow-x:hidden;
-  }
-  ::selection{background:var(--gold);color:var(--plum);}
+/* ============================================================
+   TOKENS — a painter's studio after dark
+   ============================================================ */
+:root{
+  --ink:#0b0a0e;          /* the dark room */
+  --ink-2:#131019;        /* panel fill */
+  --gesso:#efe7d8;        /* warm off-white, all body text */
+  --gesso-dim:#a49a8c;
+  --vermilion:#d94f30;
+  --ochre:#e6a62b;
+  --ultramarine:#3355b4;
+  --viridian:#1f7d63;
+  --wine:#7a2b4a;
 
-  /* subtle canvas grain */
-  body::before{
-    content:"";
-    position:fixed;inset:0;
-    pointer-events:none;
-    z-index:9999;
-    opacity:.05;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
+  --u:300px;              /* one grid unit — drives the whole tile */
+  --gap:14px;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
 
-  /* ---------- brush cursor trail ---------- */
-  .brush-dot{
-    position:fixed;
-    width:10px;height:10px;
-    border-radius:50%;
-    background:var(--gold-soft);
-    pointer-events:none;
-    z-index:9998;
-    opacity:.55;
-    transition:transform .6s ease, opacity .6s ease;
-  }
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;background:var(--ink);}
+body{
+  font-family:'Instrument Sans',system-ui,sans-serif;
+  color:var(--gesso);
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior:none;
+}
+::selection{background:var(--ochre);color:var(--ink);}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
+:focus-visible{outline:2px solid var(--ochre);outline-offset:3px;}
 
-  /* ---------- nav ---------- */
-  nav{
-    position:fixed;top:0;left:0;right:0;
-    display:flex;align-items:center;justify-content:space-between;
-    padding:22px 6vw;
-    z-index:500;
-    mix-blend-mode:difference;
-  }
-  .brand{
-    font-family:'Fraunces',serif;
-    font-size:19px;
-    letter-spacing:.02em;
-    color:var(--cream);
-  }
-  .brand em{color:var(--gold-soft);font-style:italic;}
-  .nav-links{display:flex;gap:28px;list-style:none;}
-  .nav-links a{
-    color:var(--cream);
-    text-decoration:none;
-    font-size:13px;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    opacity:.8;
-    transition:opacity .25s;
-  }
-  .nav-links a:hover{opacity:1;}
+/* canvas weave + grain, sits over everything, never blocks input */
+.tooth{
+  position:fixed;inset:0;z-index:90;pointer-events:none;
+  opacity:.09;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.vignette{
+  position:fixed;inset:0;z-index:89;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(5,4,8,.72) 100%);
+}
 
-  /* ---------- hero ---------- */
-  .hero{
-    min-height:100vh;
-    display:flex;flex-direction:column;
-    align-items:center;justify-content:center;
-    text-align:center;
-    position:relative;
-    padding:0 6vw;
-    background:
-      radial-gradient(ellipse at 30% 20%, rgba(74,45,120,.6), transparent 55%),
-      radial-gradient(ellipse at 75% 80%, rgba(169,120,193,.28), transparent 50%),
-      var(--plum);
-  }
-  .hero-eyebrow{
-    font-family:'Caveat',cursive;
-    font-size:24px;
-    color:var(--gold-soft);
-    margin-bottom:6px;
-    opacity:0;
-    animation:fadeUp 1s .2s forwards;
-  }
-  .hero h1{
-    font-family:'Fraunces',serif;
-    font-weight:500;
-    font-size:clamp(52px,10vw,128px);
-    line-height:.95;
-    letter-spacing:-.01em;
-    position:relative;
-    display:inline-block;
-  }
-  .hero h1 span{display:block;position:relative;overflow:hidden;}
-  .hero h1 span i{
-    font-style:italic;
-    font-weight:400;
-    color:transparent;
-    -webkit-text-stroke:1.5px var(--gold-soft);
-  }
-  .reveal-mask{
-    position:absolute;inset:0;
-    background:var(--plum);
-    transform-origin:left;
-    animation:wipe 1.1s .3s cubic-bezier(.77,0,.18,1) forwards;
-  }
-  .hero h1 span:nth-child(2) .reveal-mask{animation-delay:.55s;}
-  @keyframes wipe{to{transform:scaleX(0);}}
+/* ============================================================
+   THE PLANE — infinite in every direction
+   ============================================================ */
+.stage{
+  position:fixed;inset:0;z-index:1;
+  overflow:hidden;
+  cursor:grab;
+  touch-action:none;
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(51,85,180,.20), transparent 60%),
+    radial-gradient(ellipse at 82% 78%, rgba(122,43,74,.24), transparent 58%),
+    var(--ink);
+}
+.stage.dragging{cursor:grabbing;}
+.tile{position:absolute;top:0;left:0;will-change:transform;}
 
-  .hero-sub{
-    max-width:480px;
-    margin:26px auto 0;
-    font-size:16px;
-    line-height:1.7;
-    color:var(--cream-dim);
-    opacity:0;
-    animation:fadeUp 1s .9s forwards;
-  }
-  .hero-meta{
-    margin-top:34px;
-    display:flex;gap:18px;align-items:center;
-    font-size:12px;letter-spacing:.12em;text-transform:uppercase;
-    color:var(--gold-soft);
-    opacity:0;
-    animation:fadeUp 1s 1.1s forwards;
-  }
-  .hero-meta .dot{width:4px;height:4px;border-radius:50%;background:var(--gold-soft);}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.cell{position:absolute;}
+.frame{
+  position:absolute;inset:calc(var(--gap)/2);
+  overflow:hidden;
+  background:var(--ink-2);
+  box-shadow:0 18px 40px -18px rgba(0,0,0,.9), inset 0 0 0 1px rgba(239,231,216,.07);
+  transition:transform .55s var(--ease), box-shadow .55s var(--ease), opacity .5s ease, filter .5s ease;
+  transform:rotate(var(--rot,0deg));
+  cursor:pointer;
+}
+.frame img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  filter:saturate(.92) contrast(1.04);
+  transition:transform 1.1s var(--ease), filter .5s ease;
+}
+.frame:hover{
+  transform:rotate(0deg) scale(1.045) translateY(-6px);
+  box-shadow:0 34px 70px -20px rgba(0,0,0,1), inset 0 0 0 1px rgba(230,166,43,.5);
+  z-index:6;
+}
+.frame:hover img{transform:scale(1.07);filter:saturate(1.1) contrast(1.06);}
 
-  .scroll-cue{
-    position:absolute;bottom:38px;left:50%;transform:translateX(-50%);
-    display:flex;flex-direction:column;align-items:center;gap:8px;
-    opacity:0;animation:fadeUp 1s 1.4s forwards;
-  }
-  .scroll-cue span{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--cream-dim);}
-  .scroll-line{width:1px;height:34px;background:linear-gradient(var(--gold-soft),transparent);animation:drip 1.8s ease-in-out infinite;}
-  @keyframes drip{0%{transform:scaleY(0);transform-origin:top;}50%{transform:scaleY(1);transform-origin:top;}51%{transform-origin:bottom;}100%{transform:scaleY(0);transform-origin:bottom;}}
+/* shapes — cut from the tile, never breaking the pack */
+.s-rect  .frame{border-radius:2px;}
+.s-soft  .frame{border-radius:14px;}
+.s-arch  .frame{border-radius:50% 50% 8px 8px / 34% 34% 8px 8px;}
+.s-round .frame{border-radius:50%;}
+.s-leaf  .frame{border-radius:46% 6px 46% 6px;}
+.s-pill  .frame{border-radius:999px;}
 
-  /* ---------- palette filter ---------- */
-  .palette-bar{
-    position:sticky;top:0;
-    z-index:400;
-    background:rgba(31,15,24,.86);
-    backdrop-filter:blur(10px);
-    border-bottom:1px solid rgba(244,234,217,.1);
-    padding:16px 6vw;
-    display:flex;align-items:center;gap:22px;
-    flex-wrap:wrap;
-  }
-  .palette-label{
-    font-family:'Caveat',cursive;
-    font-size:19px;
-    color:var(--cream-dim);
-    margin-right:4px;
-  }
-  .swatch{
-    display:flex;align-items:center;gap:8px;
-    background:none;border:none;cursor:pointer;
-    font-family:'Work Sans',sans-serif;
-    font-size:13px;
-    letter-spacing:.03em;
-    color:var(--cream-dim);
-    padding:6px 4px;
-    position:relative;
-    transition:color .25s;
-  }
-  .swatch .blob{
-    width:16px;height:16px;border-radius:50% 50% 50% 4px;
-    box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);
-    transition:transform .25s;
-  }
-  .swatch[data-cat="all"] .blob{background:var(--cream);}
-  .swatch[data-cat="arrival"] .blob{background:var(--gold);}
-  .swatch[data-cat="create"] .blob{background:var(--sage);}
-  .swatch[data-cat="moment"] .blob{background:var(--rose);}
-  .swatch[data-cat="detail"] .blob{background:var(--wine-light);}
-  .swatch.active{color:var(--cream);}
-  .swatch.active .blob{transform:scale(1.25);}
-  .swatch:hover{color:var(--cream);}
+/* stretcher-bar label, appears on hover */
+.frame .plate{
+  position:absolute;left:0;right:0;bottom:0;
+  padding:26px 14px 12px;
+  z-index:2;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:8px;
+  background:linear-gradient(to top, rgba(6,5,9,.86), transparent);
+  opacity:0;transform:translateY(8px);
+  transition:opacity .4s ease, transform .4s var(--ease);
+  pointer-events:none;
+}
+.frame:hover .plate{opacity:1;transform:translateY(0);}
+.plate .what{font-size:12px;letter-spacing:.02em;}
+.plate .no{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;
+  color:var(--ochre);letter-spacing:.08em;
+}
+/* the mood tells you its colour */
+.frame[data-cat="arrival"] .plate .no{color:var(--ochre);}
+.frame[data-cat="create"]  .plate .no{color:var(--viridian);}
+.frame[data-cat="moment"]  .plate .no{color:var(--vermilion);}
+.frame[data-cat="detail"]  .plate .no{color:#7f9bf0;}
 
-  /* ---------- search ---------- */
-  .search-bar{padding:26px 6vw 0;}
-  .search-inner{
-    max-width:640px;margin:0 auto;
-    display:flex;align-items:center;gap:12px;
-    border:1px solid rgba(232,199,102,.3);
-    border-radius:30px;
-    padding:14px 22px;
-    background:linear-gradient(180deg, rgba(74,45,120,.25), rgba(28,17,48,.4));
-    transition:border-color .3s;
-  }
-  .search-inner:focus-within{border-color:var(--gold-soft);}
-  .search-icon{color:var(--gold-soft);font-size:15px;}
-  #search-input{
-    flex:1;background:none;border:none;outline:none;
-    color:var(--cream);
-    font-family:'Work Sans',sans-serif;font-size:15px;font-weight:300;
-  }
-  #search-input::placeholder{color:var(--cream-dim);opacity:.7;}
-  .search-hint{font-size:12px;color:var(--gold-soft);white-space:nowrap;opacity:.85;}
+/* filtered out — not deleted, just gone dry */
+.cell.ghost .frame{opacity:.10;filter:grayscale(1) brightness(.6);transform:rotate(var(--rot,0deg)) scale(.93);}
+.cell.ghost .frame:hover{transform:rotate(var(--rot,0deg)) scale(.93);box-shadow:none;}
+.cell.ghost{pointer-events:none;}
 
-  /* ---------- gallery ---------- */
-  .gallery-section{padding:70px 6vw 40px;}
-  .gallery{
-    columns:5 220px;
-    column-gap:18px;
-  }
-  @media(max-width:1200px){.gallery{columns:4 200px;}}
-  @media(max-width:900px){.gallery{columns:2 200px;}}
-  @media(max-width:520px){.gallery{columns:1;}}
+/* ripple shove */
+@keyframes shove{
+  0%{transform:translate(0,0) rotate(var(--rot,0deg)) scale(1);}
+  30%{transform:translate(var(--px,0),var(--py,0)) rotate(calc(var(--rot,0deg) + 1.5deg)) scale(1.03);}
+  100%{transform:translate(0,0) rotate(var(--rot,0deg)) scale(1);}
+}
+.frame.shoved{animation:shove .9s var(--ease);}
 
-  .frame{
-    break-inside:avoid;
-    margin-bottom:18px;
-    position:relative;
-    cursor:pointer;
-    border-radius:3px;
-    overflow:hidden;
-    box-shadow:0 14px 30px -12px rgba(0,0,0,.55);
-    opacity:0;
-    transform:translateY(36px) scale(.94) rotate(var(--rot,0deg));
-    transition:transform .7s cubic-bezier(.2,.8,.2,1), box-shadow .45s, opacity .7s ease;
-  }
-  .frame.in-view{opacity:1;transform:translateY(0) scale(1) rotate(var(--rot,0deg));}
-  .frame:hover{transform:translateY(-8px) scale(1.02) rotate(0deg);box-shadow:0 24px 44px -14px rgba(0,0,0,.65);z-index:5;}
-  .canvas{
-    width:100%;
-    aspect-ratio:var(--ar,4/5);
-    display:flex;align-items:flex-end;
-    padding:16px;
-    position:relative;
-    background-size:cover;
-    background-position:center;
-  }
-  .canvas::after{
-    content:"";
-    position:absolute;inset:0;
-    background:linear-gradient(to top, rgba(0,0,0,.55), transparent 55%);
-  }
-  .canvas .tag{
-    position:relative;z-index:2;
-    font-family:'Caveat',cursive;
-    font-size:22px;
-    color:var(--cream);
-  }
-  .canvas .num{
-    position:absolute;top:12px;right:14px;z-index:2;
-    font-size:11px;letter-spacing:.1em;color:rgba(244,234,217,.75);
-  }
-  .frame[data-cat="arrival"] .canvas{background:linear-gradient(155deg,#8a6a1f,#2e2013 70%);}
-  .frame[data-cat="create"] .canvas{background:linear-gradient(155deg,#6d3fab,#241a3d 70%);}
-  .frame[data-cat="moment"] .canvas{background:linear-gradient(155deg,#a978c1,#2c1a45 70%);}
-  .frame[data-cat="detail"] .canvas{background:linear-gradient(155deg,#4a2d78,#1c1130 70%);}
+/* fallback when a photo file is missing */
+.frame.blank{background:linear-gradient(150deg, var(--tint,#3355b4), #14111a 72%);}
+.frame.blank::after{
+  content:attr(data-no);
+  position:absolute;inset:0;display:grid;place-items:center;
+  font-family:'Fraunces',serif;font-size:34px;color:rgba(239,231,216,.28);
+}
 
-  /* ---------- lightbox ---------- */
-  .lightbox{
-    position:fixed;inset:0;z-index:1000;
-    background:rgba(15,7,11,.94);
-    display:flex;align-items:center;justify-content:center;
-    opacity:0;pointer-events:none;
-    transition:opacity .35s;
-  }
-  .lightbox.open{opacity:1;pointer-events:auto;}
-  .lightbox-inner{
-    width:min(560px,86vw);
-    aspect-ratio:4/5;
-    border-radius:4px;
-    display:flex;align-items:flex-end;padding:30px;
-    position:relative;
-    box-shadow:0 30px 70px rgba(0,0,0,.6);
-  }
-  .lightbox-inner .tag{font-family:'Caveat',cursive;font-size:30px;position:relative;z-index:2;}
-  .lightbox-inner::after{content:"";position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,.6), transparent 55%);}
-  .lb-close{
-    position:absolute;top:28px;right:6vw;
-    width:38px;height:38px;border-radius:50%;
-    border:1px solid rgba(244,234,217,.3);
-    background:none;color:var(--cream);
-    font-size:16px;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;
-  }
-  .lb-nav{
-    position:absolute;top:50%;transform:translateY(-50%);
-    background:none;border:none;color:var(--cream);
-    font-size:26px;cursor:pointer;opacity:.7;padding:12px;
-  }
-  .lb-nav:hover{opacity:1;}
-  .lb-prev{left:2vw;}
-  .lb-next{right:2vw;}
+/* paint layer — the wet cursor */
+#paint{position:fixed;inset:0;z-index:60;pointer-events:none;}
 
-  /* ---------- moments strip ---------- */
-  .strip{padding:100px 6vw;text-align:center;position:relative;}
-  .strip-eyebrow{font-family:'Caveat',cursive;font-size:22px;color:var(--gold-soft);}
-  .strip h2{
-    font-family:'Fraunces',serif;font-weight:500;
-    font-size:clamp(30px,5vw,54px);
-    max-width:780px;margin:10px auto 0;
-    line-height:1.15;
-  }
-  .strip-line{
-    width:70px;height:2px;margin:34px auto 0;
-    background:linear-gradient(90deg,var(--gold),var(--wine-light));
-  }
+/* ============================================================
+   CHROME
+   ============================================================ */
+.rail{
+  position:fixed;top:0;left:0;right:0;z-index:70;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  padding:16px 24px;
+  background:linear-gradient(to bottom, rgba(11,10,14,.92), rgba(11,10,14,0));
+  pointer-events:none;
+}
+.rail > *{pointer-events:auto;}
+.mark{font-family:'Fraunces',serif;font-weight:600;font-size:17px;letter-spacing:.01em;}
+.mark i{font-weight:400;color:var(--ochre);}
+.rail-right{display:flex;align-items:center;gap:10px;}
 
-  /* ---------- footer ---------- */
-  footer{
-    padding:70px 6vw 50px;
-    text-align:center;
-    border-top:1px solid rgba(244,234,217,.1);
-  }
-  footer .thanks{font-family:'Fraunces',serif;font-style:italic;font-size:28px;color:var(--gold-soft);}
-  footer p{margin-top:14px;color:var(--cream-dim);font-size:14px;}
-  footer .fine{margin-top:36px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(205,191,169,.5);}
+.dock{
+  display:flex;align-items:center;gap:4px;
+  background:rgba(19,16,25,.78);
+  backdrop-filter:blur(18px);
+  border:1px solid rgba(239,231,216,.10);
+  border-radius:999px;
+  padding:5px;
+}
+.swatch{
+  display:flex;align-items:center;gap:7px;
+  padding:7px 13px;border-radius:999px;
+  font-size:12px;letter-spacing:.01em;color:var(--gesso-dim);
+  transition:color .25s, background .25s;
+  white-space:nowrap;
+}
+.swatch .dab{
+  width:11px;height:11px;border-radius:52% 48% 46% 54% / 50% 44% 56% 50%;
+  transition:transform .3s var(--ease), box-shadow .3s;
+}
+.swatch[data-cat="all"] .dab{background:var(--gesso);}
+.swatch[data-cat="arrival"] .dab{background:var(--ochre);}
+.swatch[data-cat="create"] .dab{background:var(--viridian);}
+.swatch[data-cat="moment"] .dab{background:var(--vermilion);}
+.swatch[data-cat="detail"] .dab{background:var(--ultramarine);}
+.swatch:hover{color:var(--gesso);}
+.swatch.on{color:var(--ink);background:var(--gesso);}
+.swatch.on .dab{transform:scale(1.3);box-shadow:0 0 0 2px rgba(11,10,14,.25);}
 
-  @media(max-width:640px){
-    nav{padding:18px 5vw;}
-    .nav-links{display:none;}
-    .palette-bar{padding:14px 5vw;gap:14px;}
-  }
+.find{
+  display:flex;align-items:center;gap:9px;
+  background:rgba(19,16,25,.78);
+  backdrop-filter:blur(18px);
+  border:1px solid rgba(239,231,216,.10);
+  border-radius:999px;padding:9px 16px;
+  transition:border-color .3s, width .3s;
+}
+.find:focus-within{border-color:var(--ochre);}
+.find svg{opacity:.6;flex:none;}
+.find input{
+  background:none;border:none;outline:none;color:var(--gesso);
+  font:inherit;font-size:12.5px;width:150px;
+}
+.find input::placeholder{color:var(--gesso-dim);}
+.find .count{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ochre);
+  white-space:nowrap;min-width:0;
+}
+
+/* compass — where you are on a plane with no edges */
+.compass{
+  position:fixed;left:24px;bottom:24px;z-index:70;
+  display:flex;align-items:center;gap:12px;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;
+  color:var(--gesso-dim);letter-spacing:.06em;
+}
+.compass-box{
+  width:56px;height:56px;position:relative;
+  border:1px solid rgba(239,231,216,.16);
+  border-radius:4px;
+  background:rgba(19,16,25,.6);
+  backdrop-filter:blur(10px);
+  overflow:hidden;
+}
+.compass-box::before,.compass-box::after{
+  content:"";position:absolute;background:rgba(239,231,216,.10);
+}
+.compass-box::before{left:0;right:0;top:50%;height:1px;}
+.compass-box::after{top:0;bottom:0;left:50%;width:1px;}
+.pip{
+  position:absolute;width:7px;height:7px;border-radius:50%;
+  background:var(--vermilion);
+  box-shadow:0 0 10px 2px rgba(217,79,48,.7);
+  transform:translate(-50%,-50%);
+  left:50%;top:50%;
+}
+.compass .hint{line-height:1.6;}
+.compass .hint b{color:var(--gesso);font-weight:500;}
+
+/* ============================================================
+   HERO — the thesis: a wall of wet paint you have to walk into
+   ============================================================ */
+.hero{
+  position:fixed;inset:0;z-index:80;
+  display:grid;place-items:center;
+  text-align:center;padding:0 24px;
+  background:radial-gradient(ellipse at 50% 52%, rgba(11,10,14,.78) 30%, rgba(11,10,14,.95) 72%);
+  backdrop-filter:blur(3px);
+  transition:opacity .9s ease, backdrop-filter .9s ease;
+}
+.hero.gone{opacity:0;pointer-events:none;backdrop-filter:blur(0px);}
+.hero-eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--ochre);
+  opacity:0;animation:rise .9s .15s var(--ease) forwards;
+}
+.hero h1{
+  font-family:'Fraunces',serif;
+  font-weight:400;
+  font-size:clamp(54px,10.5vw,150px);
+  line-height:.92;
+  letter-spacing:-.03em;
+  margin:18px 0 0;
+}
+.hero h1 .line{display:block;position:relative;overflow:hidden;padding:.06em 0;}
+.hero h1 .line span{display:block;transform:translateY(105%);animation:lift 1.1s .25s var(--ease) forwards;}
+.hero h1 .line:nth-child(2) span{animation-delay:.42s;}
+.hero h1 em{font-style:italic;font-weight:600;color:var(--ochre);}
+@keyframes lift{to{transform:translateY(0);}}
+@keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.hero p{
+  max-width:430px;margin:26px auto 0;
+  font-size:15px;line-height:1.65;color:var(--gesso-dim);
+  opacity:0;animation:rise .9s 1s var(--ease) forwards;
+}
+.hero-meta{
+  margin-top:22px;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(164,154,140,.75);
+  opacity:0;animation:rise .9s 1.15s var(--ease) forwards;
+}
+.enter{
+  margin-top:38px;
+  position:relative;
+  padding:15px 34px;
+  font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink);
+  background:var(--gesso);
+  border-radius:999px;
+  overflow:hidden;
+  opacity:0;animation:rise .9s 1.3s var(--ease) forwards;
+  transition:transform .4s var(--ease);
+}
+.enter:hover{transform:translateY(-3px) scale(1.03);}
+.enter span{position:relative;z-index:2;}
+.enter::before{
+  content:"";position:absolute;inset:0;z-index:1;
+  background:linear-gradient(90deg,var(--ochre),var(--vermilion));
+  transform:translateY(101%);
+  transition:transform .5s var(--ease);
+}
+.enter:hover::before{transform:translateY(0);}
+
+/* ============================================================
+   LIGHTBOX
+   ============================================================ */
+.look{
+  position:fixed;inset:0;z-index:100;
+  display:grid;place-items:center;
+  background:rgba(6,5,9,.94);
+  backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;
+  transition:opacity .35s ease;
+}
+.look.open{opacity:1;pointer-events:auto;}
+.look-inner{
+  position:relative;
+  max-width:min(1020px,88vw);max-height:80vh;
+  transform:scale(.96);
+  transition:transform .45s var(--ease);
+}
+.look.open .look-inner{transform:scale(1);}
+.look-inner img{
+  max-width:min(1020px,88vw);max-height:80vh;
+  display:block;
+  box-shadow:0 40px 90px rgba(0,0,0,.8);
+}
+.look-cap{
+  display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  margin-top:14px;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;
+  color:var(--gesso-dim);
+}
+.look-cap b{color:var(--ochre);font-weight:500;}
+.look-x{position:absolute;top:22px;right:24px;font-size:20px;line-height:1;padding:10px;color:var(--gesso);opacity:.7;}
+.look-x:hover{opacity:1;}
+.look-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);
+  font-size:30px;padding:18px;opacity:.55;
+}
+.look-arrow:hover{opacity:1;}
+.look-prev{left:2vw;} .look-next{right:2vw;}
+
+/* ============================================================
+   RESPONSIVE + A11Y
+   ============================================================ */
+@media(max-width:820px){
+  :root{--u:190px;--gap:10px;}
+  .rail{flex-wrap:wrap;gap:10px;padding:12px 14px;}
+  .dock{overflow-x:auto;max-width:100%;}
+  .swatch{padding:7px 10px;}
+  .find input{width:96px;}
+  .compass{left:14px;bottom:14px;}
+  .compass .hint{display:none;}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important;}
+  .hero h1 .line span{transform:none;}
+  #paint{display:none;}
+}
 </style>
 </head>
 <body>
 
-<div id="brush-layer"></div>
+<div class="stage" id="stage"></div>
+<canvas id="paint"></canvas>
+<div class="tooth"></div>
+<div class="vignette"></div>
 
-<nav>
-  <div class="brand">sip <em>&amp; paint</em></div>
-  <ul class="nav-links">
-    <li><a href="#gallery">Gallery</a></li>
-    <li><a href="#moments">Moments</a></li>
-  </ul>
-</nav>
+<header class="rail">
+  <div class="mark">sip <i>&amp; paint</i></div>
+  <div class="rail-right">
+    <div class="dock" id="dock">
+      <button class="swatch on" data-cat="all"><span class="dab"></span>All</button>
+      <button class="swatch" data-cat="arrival"><span class="dab"></span>Arrivals</button>
+      <button class="swatch" data-cat="create"><span class="dab"></span>Painting</button>
+      <button class="swatch" data-cat="moment"><span class="dab"></span>Candid</button>
+      <button class="swatch" data-cat="detail"><span class="dab"></span>Details</button>
+    </div>
+    <div class="find">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="find" type="text" placeholder="brush, toast, laughing…" autocomplete="off">
+      <span class="count" id="count"></span>
+    </div>
+  </div>
+</header>
 
-<section class="hero">
-  <div class="hero-eyebrow">an evening we made together</div>
-  <h1>
-    <span>The Night <div class="reveal-mask"></div></span>
-    <span><i>We Painted</i> <div class="reveal-mask"></div></span>
-  </h1>
-  <p class="hero-sub">Every brushstroke, every laugh, every glass raised — collected in one place so the evening doesn't have to end when the paint dries.</p>
-  <div class="hero-meta"><span>July 12, 2026</span><span class="dot"></span><span>Sip &amp; Paint Night</span><span class="dot"></span><span id="photo-count">48 photographs</span></div>
-  <div class="scroll-cue"><span>Scroll to relive it</span><div class="scroll-line"></div></div>
-</section>
-
-<div class="palette-bar" id="filters">
-  <span class="palette-label">Filter by mood</span>
-  <button class="swatch active" data-cat="all"><span class="blob"></span>All</button>
-  <button class="swatch" data-cat="arrival"><span class="blob"></span>Arrivals</button>
-  <button class="swatch" data-cat="create"><span class="blob"></span>Creating</button>
-  <button class="swatch" data-cat="moment"><span class="blob"></span>Candid moments</button>
-  <button class="swatch" data-cat="detail"><span class="blob"></span>Details &amp; groups</button>
-</div>
-
-<div class="search-bar">
-  <div class="search-inner">
-    <span class="search-icon">&#10022;</span>
-    <input type="text" id="search-input" placeholder="Search a moment — “laughing”, “finished painting”, “group photo”…" autocomplete="off">
-    <span class="search-hint" id="search-hint"></span>
+<div class="compass">
+  <div class="compass-box"><div class="pip" id="pip"></div></div>
+  <div class="hint">
+    <div id="coords">0.00 / 0.00</div>
+    <div><b>Drag</b> anywhere · <b>click</b> to splash</div>
   </div>
 </div>
 
-<section class="gallery-section" id="gallery">
-  <div class="gallery" id="gallery-grid"></div>
+<section class="hero" id="hero">
+  <div>
+    <div class="hero-eyebrow">12 July 2026 · one evening, no edges</div>
+    <h1>
+      <span class="line"><span>An evening</span></span>
+      <span class="line"><span><em>in colour</em></span></span>
+    </h1>
+    <p>Every brushstroke, every laugh, every glass raised. The room has no walls here, so keep dragging until you find yourself.</p>
+    <div class="hero-meta"><span id="pcount">52 photographs</span> · looped forever</div>
+    <button class="enter" id="enter"><span>Walk in</span></button>
+  </div>
 </section>
 
-<section class="strip" id="moments">
-  <div class="strip-eyebrow">before you go</div>
-  <h2>Every canvas here started blank — same as the ones you painted.</h2>
-  <div class="strip-line"></div>
-</section>
-
-<footer>
-  <div class="thanks">Thank you for coming</div>
-  <p>See you at the next one. Download any photo above, or share the whole gallery with the group.</p>
-  <p class="fine">Sip &amp; Paint Night — a collection of moments, not just images</p>
-</footer>
-
-<div class="lightbox" id="lightbox">
-  <button class="lb-close" id="lb-close">&#10005;</button>
-  <button class="lb-nav lb-prev" id="lb-prev">&#8249;</button>
-  <div class="lightbox-inner" id="lb-inner"><span class="tag" id="lb-tag"></span></div>
-  <button class="lb-nav lb-next" id="lb-next">&#8250;</button>
+<div class="look" id="look">
+  <button class="look-x" id="look-x" aria-label="Close">&#10005;</button>
+  <button class="look-arrow look-prev" id="look-prev" aria-label="Previous">&#8249;</button>
+  <div class="look-inner">
+    <img id="look-img" alt="">
+    <div class="look-cap"><span id="look-what"></span><b id="look-no"></b></div>
+  </div>
+  <button class="look-arrow look-next" id="look-next" aria-label="Next">&#8250;</button>
 </div>
 
 <script>
-const shots = [
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-01.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-02.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-03.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-04.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-05.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-06.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-07.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-08.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-09.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-10.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-11.jpg"},
-  {cat:"detail", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-12.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-13.jpg"},
-  {cat:"arrival", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-14.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-15.jpg"},
-  {cat:"detail", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-16.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-17.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-18.jpg"},
-  {cat:"arrival", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-19.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-20.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-21.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-22.jpg"},
-  {cat:"detail", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-23.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-24.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-25.jpg"},
-  {cat:"arrival", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-26.jpg"},
-  {cat:"detail", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-27.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-28.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-29.jpg"},
-  {cat:"detail", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-30.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-31.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-32.jpg"},
-  {cat:"detail", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-33.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-34.jpg"},
-  {cat:"arrival", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-35.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-36.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-37.jpg"},
-  {cat:"detail", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-38.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-39.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-40.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-41.jpg"},
-  {cat:"detail", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-42.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-43.jpg"},
-  {cat:"arrival", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-44.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-45.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-46.jpg"},
-  {cat:"detail", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-47.jpg"},
-  {cat:"create", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-48.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-49.jpg"},
-  {cat:"arrival", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-50.jpg"},
-  {cat:"detail", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-51.jpg"},
-  {cat:"moment", tag:"From the night — a real moment", ar:"4/3", kw:"real photo uploaded moment", img:"images/photo-52.jpg"},
+/* ============================================================
+   1. THE PHOTOS  — edit here and nowhere else.
+   cat: arrival | create | moment | detail
+   ============================================================ */
+const CATS = ["moment","moment","moment","moment","moment","moment","create","create","create","moment",
+              "moment","detail","create","arrival","moment","detail","create","moment","arrival","moment",
+              "create","moment","detail","create","moment","arrival","detail","moment","create","detail",
+              "moment","create","detail","moment","arrival","create","moment","detail","create","moment",
+              "create","detail","moment","arrival","create","moment","detail","create","moment","arrival",
+              "detail","moment"];
+const WORDS = {
+  arrival:"arrival welcome entrance easels room before start guests coats hello",
+  create:"painting brush canvas creating focus mixing colour palette technique stroke",
+  moment:"candid laughing reaction smile friends toast fun surprise applause wine glass",
+  detail:"detail group table decor palette wine glass close up signature hands"
+};
+const SAYS = {
+  arrival:"Doors open, easels waiting",
+  create:"Brush down, world off",
+  moment:"Caught mid-laugh",
+  detail:"The small stuff we kept"
+};
+const PHOTOS = CATS.map((cat,i)=>({
+  no:String(i+1).padStart(2,"0"),
+  cat,
+  src:`images/photo-${String(i+1).padStart(2,"0")}.jpg`,
+  what:SAYS[cat],
+  kw:WORDS[cat]
+}));
+document.getElementById("pcount").textContent = PHOTOS.length + " photographs";
+
+/* ============================================================
+   2. THE TILE — 18 cells on a 6x6 grid that pack with zero waste,
+      so the plane can repeat forever without a seam.
+      [x, y, w, h] in units.
+   ============================================================ */
+const PACK = [
+  [0,0,2,2,"s-rect"], [2,0,1,1,"s-round"], [3,0,3,2,"s-rect"],
+  [2,1,1,1,"s-leaf"], [0,2,1,2,"s-arch"],  [1,2,2,1,"s-soft"],
+  [3,2,2,2,"s-soft"], [5,2,1,1,"s-round"], [1,3,1,1,"s-rect"],
+  [2,3,1,2,"s-arch"], [5,3,1,2,"s-rect"],  [0,4,1,1,"s-round"],
+  [1,4,1,2,"s-rect"], [3,4,2,1,"s-pill"],  [0,5,1,1,"s-leaf"],
+  [2,5,1,1,"s-round"],[3,5,2,1,"s-soft"],  [5,5,1,1,"s-rect"]
 ];
+const TINTS = ["#3355b4","#d94f30","#e6a62b","#1f7d63","#7a2b4a"];
 
-const grid = document.getElementById("gallery-grid");
-const catLabel = {arrival:"Arrivals",create:"Creating",moment:"Candid moments",detail:"Details & groups"};
+const stage = document.getElementById("stage");
+const U = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--u"));
+let TW, TH, cols, rows, PW, PH, tiles = [], feed = 0;
 
-shots.forEach((s,i)=>{
-  const el = document.createElement("div");
-  el.className = "frame";
-  el.dataset.cat = s.cat;
-  const rot = (Math.sin(i*12.9898)*2.4).toFixed(2);
-  el.style.setProperty("--rot", rot+"deg");
-  const bgStyle = s.img ? `background-image:url('${s.img}');` : "";
-  el.innerHTML = `<div class="canvas" style="--ar:${s.ar};${bgStyle}"><span class="num">${String(i+1).padStart(2,"0")}</span><span class="tag">${s.tag}</span></div>`;
-  el.addEventListener("click", ()=>openLightbox(i));
-  grid.appendChild(el);
-});
-document.getElementById("photo-count").textContent = shots.length + " photographs";
+function build(){
+  stage.innerHTML = "";
+  tiles = [];
+  const u = U();
+  TW = u*6; TH = u*6;
+  cols = Math.ceil(innerWidth/TW) + 2;
+  rows = Math.ceil(innerHeight/TH) + 2;
+  PW = cols*TW; PH = rows*TH;
 
-let revealCount = 0;
-const revealObserver = new IntersectionObserver((entries)=>{
-  entries.forEach(entry=>{
-    if(entry.isIntersecting){
-      const delay = (revealCount % 6) * 70;
-      entry.target.style.transitionDelay = delay+"ms";
-      entry.target.classList.add("in-view");
-      revealCount++;
-      revealObserver.unobserve(entry.target);
+  for(let ty=0; ty<rows; ty++){
+    for(let tx=0; tx<cols; tx++){
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      tile.style.width = TW+"px";
+      tile.style.height = TH+"px";
+      const cells = [];
+      PACK.forEach(([x,y,w,h,shape],i)=>{
+        const cell = document.createElement("div");
+        cell.className = "cell "+shape;
+        cell.style.left = x*u+"px";
+        cell.style.top = y*u+"px";
+        cell.style.width = w*u+"px";
+        cell.style.height = h*u+"px";
+        const f = document.createElement("div");
+        f.className = "frame";
+        f.style.setProperty("--rot", (Math.sin(i*13.37)*1.6).toFixed(2)+"deg");
+        f.innerHTML = `<img alt="" loading="lazy" decoding="async"><div class="plate"><span class="what"></span><span class="no"></span></div>`;
+        cell.appendChild(f);
+        tile.appendChild(cell);
+        cells.push(cell);
+      });
+      tile.baseX = tx*TW - TW;
+      tile.baseY = ty*TH - TH;
+      tile.cells = cells;
+      tile.kx = 0; tile.ky = 0;
+      tile.lastX = null; tile.lastY = null;
+      stage.appendChild(tile);
+      tiles.push(tile);
+      fill(tile);
     }
-  });
-}, {threshold:.12, rootMargin:"0px 0px -40px 0px"});
-document.querySelectorAll(".frame").forEach(f=>revealObserver.observe(f));
-
-let activeCat = "all";
-let activeQuery = "";
-const searchHint = document.getElementById("search-hint");
-
-function applyFilters(){
-  let shown = 0;
-  document.querySelectorAll(".frame").forEach((f,i)=>{
-    const s = shots[i];
-    const matchesCat = activeCat==="all" || s.cat===activeCat;
-    const haystack = (s.tag+" "+s.kw).toLowerCase();
-    const matchesQuery = activeQuery==="" || haystack.includes(activeQuery);
-    const visible = matchesCat && matchesQuery;
-    f.style.display = visible ? "" : "none";
-    if(visible) shown++;
-  });
-  searchHint.textContent = activeQuery ? shown+" match"+(shown===1?"":"es") : "";
-}
-
-document.querySelectorAll(".swatch").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
-    document.querySelectorAll(".swatch").forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-    activeCat = btn.dataset.cat;
-    applyFilters();
-  });
-});
-
-document.getElementById("search-input").addEventListener("input", e=>{
-  activeQuery = e.target.value.trim().toLowerCase();
-  applyFilters();
-});
-
-let currentIndex = 0;
-const lightbox = document.getElementById("lightbox");
-const lbInner = document.getElementById("lb-inner");
-const lbTag = document.getElementById("lb-tag");
-
-function paintLightbox(i){
-  const s = shots[i];
-  const bgMap = {
-    arrival:"linear-gradient(155deg,#8a6a1f,#2e2013 70%)",
-    create:"linear-gradient(155deg,#6d3fab,#241a3d 70%)",
-    moment:"linear-gradient(155deg,#a978c1,#2c1a45 70%)",
-    detail:"linear-gradient(155deg,#4a2d78,#1c1130 70%)"
-  };
-  lbInner.style.background = bgMap[s.cat];
-  if(s.img){
-    lbInner.style.backgroundImage = `url('${s.img}')`;
-    lbInner.style.backgroundSize = "cover";
-    lbInner.style.backgroundPosition = "center";
   }
-  lbTag.textContent = s.tag;
-  currentIndex = i;
+  applyFilter();
 }
-function openLightbox(i){ paintLightbox(i); lightbox.classList.add("open"); }
-function closeLightbox(){ lightbox.classList.remove("open"); }
 
-document.getElementById("lb-close").addEventListener("click", closeLightbox);
-lightbox.addEventListener("click", e=>{ if(e.target===lightbox) closeLightbox(); });
-document.getElementById("lb-next").addEventListener("click", ()=> paintLightbox((currentIndex+1)%shots.length));
-document.getElementById("lb-prev").addEventListener("click", ()=> paintLightbox((currentIndex-1+shots.length)%shots.length));
-document.addEventListener("keydown", e=>{
-  if(!lightbox.classList.contains("open")) return;
-  if(e.key==="Escape") closeLightbox();
-  if(e.key==="ArrowRight") paintLightbox((currentIndex+1)%shots.length);
-  if(e.key==="ArrowLeft") paintLightbox((currentIndex-1+shots.length)%shots.length);
+/* hand a tile a fresh run of photos. Only ever called while the tile
+   is fully off-screen, so the swap is invisible and the feed never repeats
+   in the same place twice. */
+function fill(tile){
+  tile.cells.forEach((cell,i)=>{
+    const p = PHOTOS[(feed + i) % PHOTOS.length];
+    const f = cell.querySelector(".frame");
+    const img = f.querySelector("img");
+    cell.dataset.idx = (feed + i) % PHOTOS.length;
+    f.dataset.cat = p.cat;
+    f.dataset.no = p.no;
+    f.classList.remove("blank");
+    f.style.setProperty("--tint", TINTS[i % TINTS.length]);
+    f.querySelector(".what").textContent = p.what;
+    f.querySelector(".no").textContent = p.no;
+    img.alt = p.what;
+    img.onerror = ()=>{ img.style.display="none"; f.classList.add("blank"); };
+    img.style.display = "";
+    img.src = p.src;
+  });
+  feed = (feed + PACK.length) % PHOTOS.length;
+  if(typeof applyFilter === "function") applyFilter(tile);
+}
+
+/* ============================================================
+   3. PANNING — wheel, drag, fling, keys. Wraps in all four directions.
+   ============================================================ */
+let tX = 0, tY = 0, oX = 0, oY = 0;
+const wrap = (v, size) => ((v % size) + size) % size;
+
+function frame(){
+  oX += (tX - oX) * 0.085;
+  oY += (tY - oY) * 0.085;
+
+  for(const tile of tiles){
+    const rawX = tile.baseX + oX;
+    const rawY = tile.baseY + oY;
+    const x = wrap(rawX + TW, PW) - TW;
+    const y = wrap(rawY + TH, PH) - TH;
+    const kx = Math.round((x - rawX) / PW);
+    const ky = Math.round((y - rawY) / PH);
+    if(tile.lastX !== null && (kx !== tile.kx || ky !== tile.ky)) fill(tile);
+    tile.kx = kx; tile.ky = ky;
+    tile.lastX = x; tile.lastY = y;
+    tile.style.transform = `translate3d(${x}px,${y}px,0)`;
+  }
+
+  pip.style.left = (wrap(-oX, PW) / PW * 100) + "%";
+  pip.style.top  = (wrap(-oY, PH) / PH * 100) + "%";
+  coords.textContent = (-oX/1000).toFixed(2) + " / " + (-oY/1000).toFixed(2);
+
+  requestAnimationFrame(frame);
+}
+
+const pip = document.getElementById("pip");
+const coords = document.getElementById("coords");
+
+stage.addEventListener("wheel", e=>{
+  e.preventDefault();
+  if(e.shiftKey){ tX -= e.deltaY; }
+  else { tX -= e.deltaX; tY -= e.deltaY; }
+}, {passive:false});
+
+let down=false, sx=0, sy=0, px=0, py=0, moved=0, vx=0, vy=0, lastT=0;
+stage.addEventListener("pointerdown", e=>{
+  down=true; moved=0; vx=vy=0;
+  sx=px=e.clientX; sy=py=e.clientY; lastT=performance.now();
+  stage.classList.add("dragging");
+  stage.setPointerCapture(e.pointerId);
+});
+stage.addEventListener("pointermove", e=>{
+  if(!down) return;
+  const dx = e.clientX - px, dy = e.clientY - py;
+  const dt = Math.max(performance.now() - lastT, 1);
+  vx = dx/dt; vy = dy/dt; lastT = performance.now();
+  tX += dx; tY += dy;
+  moved += Math.abs(dx) + Math.abs(dy);
+  px = e.clientX; py = e.clientY;
+});
+function release(){
+  if(!down) return;
+  down=false;
+  stage.classList.remove("dragging");
+  tX += vx*140; tY += vy*140;
+}
+stage.addEventListener("pointerup", release);
+stage.addEventListener("pointercancel", release);
+
+addEventListener("keydown", e=>{
+  const step = 260;
+  if(look.classList.contains("open")) return;
+  if(e.key==="ArrowRight"){ tX -= step; } if(e.key==="ArrowLeft"){ tX += step; }
+  if(e.key==="ArrowDown"){ tY -= step; }  if(e.key==="ArrowUp"){ tY += step; }
 });
 
-/* brush cursor trail — desktop only, throttled */
-if(window.matchMedia("(hover: hover)").matches){
-  let last = 0;
-  document.addEventListener("mousemove", e=>{
-    const now = Date.now();
-    if(now-last < 45) return;
-    last = now;
-    const dot = document.createElement("div");
-    dot.className = "brush-dot";
-    dot.style.left = e.clientX-5+"px";
-    dot.style.top = e.clientY-5+"px";
-    document.getElementById("brush-layer").appendChild(dot);
-    requestAnimationFrame(()=>{
-      dot.style.transform = "scale(2.4)";
-      dot.style.opacity = "0";
-    });
-    setTimeout(()=>dot.remove(), 650);
+/* a breath of drift when nobody touches anything */
+let idle = 0;
+setInterval(()=>{
+  idle++;
+  if(idle > 12 && !down){ tX -= 0.35; tY -= 0.18; }
+}, 40);
+["pointerdown","pointermove","wheel","keydown"].forEach(ev=>addEventListener(ev, ()=>idle=0, {passive:true}));
+
+/* ============================================================
+   4. THE WET CURSOR — a real brush that loads, tapers and dries out
+   ============================================================ */
+const paint = document.getElementById("paint");
+const ctx = paint.getContext("2d");
+let dpr = 1;
+function sizeCanvas(){
+  dpr = Math.min(devicePixelRatio || 1, 2);
+  paint.width = innerWidth*dpr; paint.height = innerHeight*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+sizeCanvas();
+
+const INKS = ["#d94f30","#e6a62b","#3355b4","#1f7d63","#7a2b4a","#efe7d8"];
+let inkI = 0, hue = INKS[0];
+let mx=0, my=0, lx=0, ly=0, hasBrush=false, width=0;
+const ripples = [];
+
+if(matchMedia("(hover:hover)").matches && !matchMedia("(prefers-reduced-motion:reduce)").matches){
+  addEventListener("pointermove", e=>{
+    if(!hasBrush){ lx = e.clientX; ly = e.clientY; hasBrush = true; }
+    mx = e.clientX; my = e.clientY;
+  }, {passive:true});
+  addEventListener("pointerdown", e=>{
+    hue = INKS[(inkI++) % INKS.length];
+    ripples.push({x:e.clientX, y:e.clientY, r:0, a:1, c:hue});
+    splash(e.clientX, e.clientY, hue);
+    shove(e.clientX, e.clientY);
+  });
+  requestAnimationFrame(brush);
+}
+
+function brush(){
+  /* the whole canvas dries a little every frame */
+  ctx.globalCompositeOperation = "destination-out";
+  ctx.fillStyle = "rgba(0,0,0,.055)";
+  ctx.fillRect(0,0,innerWidth,innerHeight);
+  ctx.globalCompositeOperation = "source-over";
+
+  if(hasBrush){
+    const dx = mx-lx, dy = my-ly;
+    const speed = Math.hypot(dx,dy);
+    /* fast hand, thin dry stroke. slow hand, fat loaded stroke. */
+    const target = Math.max(2.5, 22 - speed*0.55);
+    width += (target - width)*0.25;
+
+    if(speed > 0.6){
+      const ang = Math.atan2(dy,dx);
+      ctx.lineCap = "round";
+      /* three bristles, slightly out of register — that's what reads as paint */
+      for(let b=-1; b<=1; b++){
+        const off = b * width * 0.30;
+        ctx.beginPath();
+        ctx.moveTo(lx + Math.cos(ang+Math.PI/2)*off, ly + Math.sin(ang+Math.PI/2)*off);
+        ctx.lineTo(mx + Math.cos(ang+Math.PI/2)*off, my + Math.sin(ang+Math.PI/2)*off);
+        ctx.strokeStyle = hue;
+        ctx.globalAlpha = b===0 ? .5 : .26;
+        ctx.lineWidth = width * (b===0 ? .62 : .3);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      /* the bright wet tip */
+      ctx.beginPath();
+      ctx.arc(mx,my, Math.max(width*0.16,1.6), 0, 7);
+      ctx.fillStyle = hue;
+      ctx.fill();
+    }
+    lx += dx*0.35; ly += dy*0.35;
+  }
+
+  for(let i=ripples.length-1; i>=0; i--){
+    const r = ripples[i];
+    r.r += 9 + r.r*0.045;
+    r.a *= 0.955;
+    ctx.beginPath();
+    ctx.arc(r.x, r.y, r.r, 0, 7);
+    ctx.strokeStyle = r.c;
+    ctx.globalAlpha = r.a * 0.5;
+    ctx.lineWidth = Math.max(1, 9 - r.r*0.02);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    if(r.a < 0.05 || r.r > Math.hypot(innerWidth,innerHeight)) ripples.splice(i,1);
+  }
+  requestAnimationFrame(brush);
+}
+
+/* flicked droplets on every click */
+function splash(x,y,c){
+  for(let i=0;i<14;i++){
+    const a = Math.random()*Math.PI*2;
+    const d = 8 + Math.random()*70;
+    ctx.beginPath();
+    ctx.arc(x + Math.cos(a)*d, y + Math.sin(a)*d, 1 + Math.random()*4.5, 0, 7);
+    ctx.fillStyle = c;
+    ctx.globalAlpha = .25 + Math.random()*.5;
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* the ripple pushes the photographs out of its way */
+function shove(x,y){
+  document.querySelectorAll(".frame").forEach(f=>{
+    const r = f.getBoundingClientRect();
+    if(r.right < -50 || r.left > innerWidth+50 || r.bottom < -50 || r.top > innerHeight+50) return;
+    const cx = r.left + r.width/2, cy = r.top + r.height/2;
+    const dx = cx-x, dy = cy-y;
+    const d = Math.hypot(dx,dy);
+    if(d > 620 || d < 1) return;
+    const push = (1 - d/620) * 22;
+    f.style.setProperty("--px", (dx/d*push).toFixed(1)+"px");
+    f.style.setProperty("--py", (dy/d*push).toFixed(1)+"px");
+    f.classList.remove("shoved");
+    void f.offsetWidth;
+    setTimeout(()=>f.classList.add("shoved"), d*0.55);
+    f.addEventListener("animationend", ()=>f.classList.remove("shoved"), {once:true});
   });
 }
+
+/* ============================================================
+   5. FILTER + FIND — nothing is removed, it just dries out
+   ============================================================ */
+let cat = "all", q = "";
+const count = document.getElementById("count");
+
+function applyFilter(only){
+  const scope = only ? only.cells : document.querySelectorAll(".cell");
+  let live = 0, total = 0;
+  scope.forEach(cell=>{
+    const p = PHOTOS[cell.dataset.idx];
+    if(!p) return;
+    const okCat = cat==="all" || p.cat===cat;
+    const okQ = q==="" || (p.what+" "+p.kw+" "+p.cat).toLowerCase().includes(q);
+    cell.classList.toggle("ghost", !(okCat && okQ));
+  });
+  if(!only){
+    PHOTOS.forEach(p=>{
+      const okCat = cat==="all" || p.cat===cat;
+      const okQ = q==="" || (p.what+" "+p.kw+" "+p.cat).toLowerCase().includes(q);
+      total++; if(okCat && okQ) live++;
+    });
+    count.textContent = (cat==="all" && q==="") ? "" : live+"/"+total;
+  }
+}
+
+document.querySelectorAll(".swatch").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    document.querySelectorAll(".swatch").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    cat = b.dataset.cat;
+    applyFilter();
+  });
+});
+document.getElementById("find").addEventListener("input", e=>{
+  q = e.target.value.trim().toLowerCase();
+  applyFilter();
+});
+
+/* ============================================================
+   6. LOOK CLOSER
+   ============================================================ */
+const look = document.getElementById("look");
+const lookImg = document.getElementById("look-img");
+let at = 0;
+function show(i){
+  at = (i + PHOTOS.length) % PHOTOS.length;
+  const p = PHOTOS[at];
+  lookImg.src = p.src;
+  lookImg.alt = p.what;
+  document.getElementById("look-what").textContent = p.what;
+  document.getElementById("look-no").textContent = "No. " + p.no + " · " + p.cat;
+  look.classList.add("open");
+}
+stage.addEventListener("click", e=>{
+  if(moved > 8) return;              /* that was a drag, not a click */
+  const cell = e.target.closest(".cell");
+  if(!cell || cell.classList.contains("ghost")) return;
+  show(+cell.dataset.idx);
+});
+document.getElementById("look-x").addEventListener("click", ()=>look.classList.remove("open"));
+document.getElementById("look-next").addEventListener("click", ()=>show(at+1));
+document.getElementById("look-prev").addEventListener("click", ()=>show(at-1));
+look.addEventListener("click", e=>{ if(e.target===look) look.classList.remove("open"); });
+addEventListener("keydown", e=>{
+  if(!look.classList.contains("open")) return;
+  if(e.key==="Escape") look.classList.remove("open");
+  if(e.key==="ArrowRight") show(at+1);
+  if(e.key==="ArrowLeft") show(at-1);
+});
+
+/* ============================================================
+   7. GO
+   ============================================================ */
+const hero = document.getElementById("hero");
+function walkIn(){
+  hero.classList.add("gone");
+  tX -= 90; tY -= 60;
+  removeEventListener("wheel", walkIn);
+}
+document.getElementById("enter").addEventListener("click", walkIn);
+addEventListener("wheel", walkIn, {once:true, passive:true});
+
+let rt;
+addEventListener("resize", ()=>{
+  clearTimeout(rt);
+  rt = setTimeout(()=>{ sizeCanvas(); build(); }, 200);
+});
+
+build();
+requestAnimationFrame(frame);
 </script>
 </body>
 </html>
