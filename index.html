@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sip &amp; Paint · The Wet Room</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="preload" as="image" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -89,12 +91,10 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 .frame:hover img{transform:scale(1.07);filter:saturate(1.1) contrast(1.06);}
 
 /* shapes — cut from the tile, never breaking the pack */
-.s-rect  .frame{border-radius:2px;}
-.s-soft  .frame{border-radius:14px;}
-.s-arch  .frame{border-radius:50% 50% 8px 8px / 34% 34% 8px 8px;}
+.s-rect  .frame{border-radius:3px;}
+.s-soft  .frame{border-radius:10px;}
+.s-arch  .frame{border-radius:50% 50% 10px 10px / 32% 32% 10px 10px;}
 .s-round .frame{border-radius:50%;}
-.s-leaf  .frame{border-radius:46% 6px 46% 6px;}
-.s-pill  .frame{border-radius:999px;}
 
 /* stretcher-bar label, appears on hover */
 /* ripple shove */
@@ -217,7 +217,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
   letter-spacing:-.03em;
   margin:18px 0 0;
 }
-.hero h1 .line{display:block;position:relative;overflow:hidden;padding:.06em 0;}
+.hero h1 .line{display:block;position:relative;overflow:hidden;padding:.08em 0 .22em;}
 .hero h1 .line span{display:block;transform:translateY(105%);animation:lift 1.1s .25s var(--ease) forwards;}
 .hero h1 .line:nth-child(2) span{animation-delay:.42s;}
 .hero h1 em{font-style:italic;font-weight:600;color:var(--ochre);}
@@ -313,6 +313,265 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
   .hero h1 .line span{transform:none;}
   #paint{display:none;}
 }
+/* ============================================================
+   TOOL BUTTONS — top-right rail
+   ============================================================ */
+.tools{display:flex;align-items:center;gap:8px;}
+.tool{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 15px;
+  background:rgba(19,16,25,.72);
+  backdrop-filter:blur(14px);
+  border:1px solid rgba(239,231,216,.14);
+  border-radius:999px;
+  color:var(--gesso);
+  font-size:12px;letter-spacing:.02em;
+  transition:transform .3s var(--ease), background .3s, border-color .3s, color .3s;
+}
+.tool svg{width:14px;height:14px;flex:none;}
+.tool.icon-only{padding:9px;width:36px;height:36px;justify-content:center;}
+.tool.icon-only svg{width:15px;height:15px;}
+.tool:hover{
+  transform:translateY(-2px);
+  background:var(--gesso);color:var(--ink);border-color:var(--gesso);
+}
+.tool.active{background:var(--ochre);color:var(--ink);border-color:var(--ochre);}
+
+/* ============================================================
+   KEEPSAKE MODE — select photos to build a collage
+   ============================================================ */
+body.selecting .stage{cursor:crosshair;}
+body.selecting .frame{cursor:pointer;}
+.pick{
+  position:absolute;inset:0;z-index:3;
+  display:none;place-items:center;
+  background:rgba(11,10,14,.35);
+  color:var(--gesso);
+  transition:background .2s;
+  pointer-events:none;
+}
+.pick svg{width:32px;height:32px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.6));}
+body.selecting .pick{display:grid;}
+.cell.chosen .pick{background:rgba(230,166,43,.45);}
+.cell.chosen .frame{box-shadow:0 0 0 3px var(--ochre), 0 18px 40px -18px rgba(0,0,0,.9);}
+
+/* selection tray, bottom */
+.tray{
+  position:fixed;left:50%;bottom:24px;z-index:78;
+  transform:translate(-50%,140%);
+  display:flex;align-items:center;gap:14px;
+  padding:12px 14px 12px 18px;
+  background:rgba(19,16,25,.88);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(239,231,216,.14);
+  border-radius:16px;
+  transition:transform .5s var(--ease);
+  max-width:calc(100vw - 48px);
+}
+body.selecting .tray{transform:translate(-50%,0);}
+.tray-count{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;
+  color:var(--gesso-dim);letter-spacing:.06em;white-space:nowrap;
+}
+.tray-count b{color:var(--ochre);font-weight:500;}
+.tray-thumbs{display:flex;gap:6px;}
+.tray-thumbs .t{
+  width:40px;height:40px;border-radius:6px;
+  background-size:cover;background-position:center;
+  background-color:var(--ink-2);
+  position:relative;
+  transition:transform .3s var(--ease);
+}
+.tray-thumbs .t:hover{transform:translateY(-3px);}
+.tray-thumbs .t::after{
+  content:"×";
+  position:absolute;top:-6px;right:-6px;
+  width:16px;height:16px;
+  background:var(--vermilion);color:var(--gesso);
+  border-radius:50%;
+  font-size:12px;line-height:14px;text-align:center;
+  opacity:0;transition:opacity .2s;
+}
+.tray-thumbs .t:hover::after{opacity:1;}
+.tray-do{
+  padding:10px 16px;border-radius:999px;
+  background:var(--gesso);color:var(--ink);
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  font-weight:500;
+  transition:transform .3s var(--ease), background .3s, opacity .3s;
+  white-space:nowrap;
+}
+.tray-do:disabled{opacity:.35;cursor:not-allowed;}
+.tray-do:not(:disabled):hover{background:var(--ochre);transform:translateY(-2px);}
+
+/* ============================================================
+   MODAL — shared shell for keepsake preview + contact + share
+   ============================================================ */
+.modal{
+  position:fixed;inset:0;z-index:105;
+  display:grid;place-items:center;
+  background:rgba(6,5,9,.94);
+  backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;
+  transition:opacity .35s ease;
+  padding:24px;
+}
+.modal.open{opacity:1;pointer-events:auto;}
+.modal-card{
+  position:relative;
+  max-width:min(720px, 92vw);
+  width:100%;
+  background:var(--ink-2);
+  border:1px solid rgba(239,231,216,.10);
+  border-radius:16px;
+  padding:36px 36px 32px;
+  transform:scale(.96);
+  transition:transform .4s var(--ease);
+  max-height:88vh;overflow:auto;
+}
+.modal.open .modal-card{transform:scale(1);}
+.modal-x{
+  position:absolute;top:14px;right:16px;
+  width:34px;height:34px;
+  display:grid;place-items:center;
+  color:var(--gesso-dim);font-size:18px;
+  border-radius:50%;
+  transition:color .2s, background .2s;
+}
+.modal-x:hover{color:var(--gesso);background:rgba(239,231,216,.08);}
+.modal h2{
+  font-family:'Fraunces',serif;font-weight:400;
+  font-size:32px;line-height:1.1;letter-spacing:-.02em;
+  margin-bottom:6px;
+}
+.modal h2 em{font-style:italic;color:var(--ochre);}
+.modal .sub{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--gesso-dim);
+  margin-bottom:22px;
+}
+
+/* contact list */
+.reach{display:flex;flex-direction:column;gap:10px;}
+.reach a{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 18px;
+  background:rgba(239,231,216,.04);
+  border:1px solid rgba(239,231,216,.08);
+  border-radius:12px;
+  color:var(--gesso);
+  text-decoration:none;
+  transition:background .25s, border-color .25s, transform .25s var(--ease);
+}
+.reach a:hover{background:rgba(230,166,43,.10);border-color:var(--ochre);transform:translateX(4px);}
+.reach .ico{
+  width:40px;height:40px;flex:none;
+  display:grid;place-items:center;
+  background:rgba(230,166,43,.14);color:var(--ochre);
+  border-radius:10px;
+}
+.reach .ico svg{width:18px;height:18px;}
+.reach .rlabel{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gesso-dim);margin-bottom:2px;}
+.reach .rval{font-size:14px;}
+
+/* keepsake preview canvas */
+.keep-frame{
+  background:var(--ink);
+  border-radius:10px;
+  padding:14px;
+  margin-bottom:20px;
+  display:grid;place-items:center;
+}
+#keep-canvas{
+  max-width:100%;height:auto;display:block;
+  border-radius:4px;
+  box-shadow:0 20px 50px rgba(0,0,0,.6);
+}
+.keep-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.action-btn{
+  flex:1;min-width:140px;
+  padding:14px 18px;border-radius:12px;
+  font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  font-weight:500;
+  transition:transform .3s var(--ease), background .3s, color .3s;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+}
+.action-btn svg{width:14px;height:14px;}
+.action-btn.primary{background:var(--gesso);color:var(--ink);}
+.action-btn.primary:hover{background:var(--ochre);transform:translateY(-2px);}
+.action-btn.ghost{background:transparent;color:var(--gesso);border:1px solid rgba(239,231,216,.18);}
+.action-btn.ghost:hover{border-color:var(--gesso);transform:translateY(-2px);}
+
+/* share sheet inside modal */
+.share-note{
+  font-size:13px;color:var(--gesso-dim);line-height:1.55;
+  margin-bottom:18px;
+}
+.share-caption{
+  background:rgba(239,231,216,.05);
+  border:1px solid rgba(239,231,216,.10);
+  border-radius:10px;
+  padding:14px 16px;
+  font-size:13px;line-height:1.55;
+  margin-bottom:18px;
+  font-family:'IBM Plex Mono',monospace;
+  color:var(--gesso);
+  white-space:pre-wrap;word-break:break-word;
+}
+.share-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;
+}
+.share-grid a, .share-grid button{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:16px 10px;
+  background:rgba(239,231,216,.04);
+  border:1px solid rgba(239,231,216,.08);
+  border-radius:12px;
+  color:var(--gesso);
+  text-decoration:none;
+  font-size:11px;letter-spacing:.06em;
+  transition:background .25s, border-color .25s, transform .25s var(--ease);
+}
+.share-grid a:hover, .share-grid button:hover{
+  background:rgba(230,166,43,.10);border-color:var(--ochre);transform:translateY(-3px);
+}
+.share-grid svg{width:22px;height:22px;color:var(--ochre);}
+
+/* toast for copy confirmations */
+.toast{
+  position:fixed;left:50%;bottom:100px;z-index:120;
+  transform:translate(-50%,20px);
+  padding:12px 20px;
+  background:var(--ochre);color:var(--ink);
+  border-radius:999px;
+  font-size:12px;letter-spacing:.08em;font-weight:500;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s, transform .3s var(--ease);
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+
+@media(max-width:640px){
+  .tool span.txt{display:none;}
+  .tool{padding:9px;width:36px;height:36px;justify-content:center;}
+  .modal-card{padding:28px 22px;}
+  .modal h2{font-size:24px;}
+}
+/* ============================================================
+   EVENT LOGO — only in three places: hero, contact, keepsake
+   ============================================================ */
+.hero-logo{
+  height:clamp(70px, 9vw, 110px);
+  width:auto;
+  margin-bottom:18px;
+  opacity:0;animation:rise .9s .05s var(--ease) forwards;
+  filter:drop-shadow(0 6px 24px rgba(107,49,181,.28));
+}
+.contact-logo{
+  height:64px;width:auto;margin-bottom:14px;display:block;
+  filter:drop-shadow(0 4px 16px rgba(107,49,181,.25));
+}
+
 </style>
 </head>
 <body>
@@ -324,6 +583,23 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 
 <header class="rail">
   <div class="mark">sip <i>&amp; paint</i></div>
+  <div class="tools" id="tools" style="display:none;">
+    <button class="tool" id="btn-keep" aria-label="Make a keepsake">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="8" height="8" rx="1"/>
+        <rect x="13" y="3" width="8" height="8" rx="1"/>
+        <rect x="3" y="13" width="8" height="8" rx="1"/>
+        <rect x="13" y="13" width="8" height="8" rx="1"/>
+      </svg>
+      <span class="txt">Make a keepsake</span>
+    </button>
+    <button class="tool icon-only" id="btn-contact" aria-label="Contact us">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 6h16v12H4z"/>
+        <path d="M4 7l8 6 8-6"/>
+      </svg>
+    </button>
+  </div>
 </header>
 
 <button class="door" id="door" aria-label="Return to the top">
@@ -344,23 +620,125 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 
 <section class="hero" id="hero">
   <div>
-    <div class="hero-eyebrow">18 July 2026 · boundless love conference</div>
+    <img class="hero-logo" src="logo.png" alt="Boundless Love Conference">
+    <div class="hero-eyebrow">18 July 2026 &middot; Sip &amp; Paint 1.0</div>
     <h1>
       <span class="line"><span>An evening</span></span>
       <span class="line"><span><em>of colors</em></span></span>
     </h1>
-    <p>God told them, "I’ve never quit loving you and never will. Expect love, love, and more love!"</p>
-    <div class="hero-meta"><span id="pcount">love captured in moments</span> · infinite gallery</div>
+    <p>God says, &ldquo;I&rsquo;ve never quit loving you and never will. Expect love, love and more love!&rdquo;</p>
+    <div class="hero-meta">my photographs &middot; infinite gallery</div>
     <button class="enter" id="enter"><span>Walk in</span></button>
   </div>
 </section>
+
+<!-- keepsake selection tray -->
+<div class="tray" id="tray" aria-live="polite">
+  <div class="tray-count"><b id="tray-num">0</b> / 6 photos</div>
+  <div class="tray-thumbs" id="tray-thumbs"></div>
+  <button class="tray-do" id="tray-do" disabled>Assemble</button>
+  <button class="tray-do" id="tray-cancel" style="background:transparent;color:var(--gesso-dim);border:1px solid rgba(239,231,216,.18);">Cancel</button>
+</div>
+
+<!-- contact modal -->
+<div class="modal" id="modal-contact" role="dialog" aria-labelledby="contact-title">
+  <div class="modal-card">
+    <button class="modal-x" data-close aria-label="Close">&#10005;</button>
+    <img class="contact-logo" src="logo.png" alt="Boundless Love Conference">
+    <h2 id="contact-title">Say <em>hello</em></h2>
+    <p class="share-note">Questions about the event, joining the next one, or anything else &mdash; Deborah&rsquo;s around.</p>
+    <div class="reach">
+      <a href="mailto:tmgmmoscowchapter@gmail.com">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg></span>
+        <span><span class="rlabel">Email</span><br><span class="rval">tmgmmoscowchapter@gmail.com</span></span>
+      </a>
+      <a href="https://wa.me/79779696822" target="_blank" rel="noopener">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 0 1-11.9 6.9L4 20l1.2-4A8 8 0 1 1 20 12z"/></svg></span>
+        <span><span class="rlabel">WhatsApp Deborah</span><br><span class="rval">+7 977 969 6822</span></span>
+      </a>
+      <a href="tel:+79779696822">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.4 2.1L8 9.6a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z"/></svg></span>
+        <span><span class="rlabel">Call Deborah</span><br><span class="rval">+7 977 969 6822</span></span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- keepsake preview modal -->
+<div class="modal" id="modal-keep" role="dialog" aria-labelledby="keep-title">
+  <div class="modal-card">
+    <button class="modal-x" data-close aria-label="Close">&#10005;</button>
+    <div class="sub">Your keepsake</div>
+    <h2 id="keep-title">A <em>puzzle</em> of the evening</h2>
+    <div class="keep-frame">
+      <canvas id="keep-canvas" width="1200" height="1200"></canvas>
+    </div>
+    <div class="keep-actions">
+      <button class="action-btn primary" id="keep-download">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M4 21h16"/></svg>
+        Download
+      </button>
+      <button class="action-btn ghost" id="keep-share">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4"/><path d="M8.6 13.5l6.8 4"/></svg>
+        Share
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- share modal -->
+<div class="modal" id="modal-share" role="dialog" aria-labelledby="share-title">
+  <div class="modal-card">
+    <button class="modal-x" data-close aria-label="Close">&#10005;</button>
+    <div class="sub">Share</div>
+    <h2 id="share-title">Take it with you</h2>
+    <p class="share-note">Your caption is ready. On phones with a share sheet, one tap sends the image and text together. On desktop, download the image and copy the caption, then paste when you post.</p>
+    <div class="share-caption" id="share-caption"></div>
+    <div class="share-grid" id="share-grid">
+      <button data-copy>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        Copy caption
+      </button>
+      <a data-plat="wa" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 0 1-11.9 6.9L4 20l1.2-4A8 8 0 1 1 20 12z"/></svg>
+        WhatsApp
+      </a>
+      <a data-plat="tg" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3L2 11l7 3 3 7z"/><path d="M22 3l-13 11"/></svg>
+        Telegram
+      </a>
+      <a data-plat="x" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 3h3l-7 8 8 10h-6l-5-6-5 6H3l7-9L2 3h6l4 5z"/></svg>
+        X (Twitter)
+      </a>
+      <a data-plat="fb" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h-3a5 5 0 0 0-5 5v3H4v4h3v6h4v-6h3l1-4h-4V8a1 1 0 0 1 1-1h3z"/></svg>
+        Facebook
+      </a>
+      <button data-download>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M4 21h16"/></svg>
+        Download image
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- toast -->
+<div class="toast" id="toast">Copied</div>
 
 <div class="look" id="look">
   <button class="look-x" id="look-x" aria-label="Close">&#10005;</button>
   <button class="look-arrow look-prev" id="look-prev" aria-label="Previous">&#8249;</button>
   <div class="look-inner">
     <img id="look-img" alt="">
-    <div class="look-cap"><span id="look-what"></span><b id="look-no"></b></div>
+    <div class="look-cap">
+      <span id="look-what"></span>
+      <button class="tool" id="look-share" style="padding:6px 12px;font-size:11px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4"/><path d="M8.6 13.5l6.8 4"/></svg>
+        Share
+      </button>
+      <b id="look-no"></b>
+    </div>
   </div>
   <button class="look-arrow look-next" id="look-next" aria-label="Next">&#8250;</button>
 </div>
@@ -376,7 +754,6 @@ const PHOTOS = Array.from({length:PHOTO_COUNT}, (_,i)=>({
   no:String(i+1).padStart(2,"0"),
   src:`images/photo-${String(i+1).padStart(2,"0")}.jpg`
 }));
-document.getElementById("pcount").textContent = PHOTOS.length + " photographs";
 
 /* ============================================================
    2. THE TILE — 18 cells on a 6x6 grid that pack with zero waste,
@@ -384,12 +761,15 @@ document.getElementById("pcount").textContent = PHOTOS.length + " photographs";
       [x, y, w, h] in units.
    ============================================================ */
 const PACK = [
-  [0,0,2,2,"s-rect"], [2,0,1,1,"s-round"], [3,0,3,2,"s-rect"],
-  [2,1,1,1,"s-leaf"], [0,2,1,2,"s-arch"],  [1,2,2,1,"s-soft"],
-  [3,2,2,2,"s-soft"], [5,2,1,1,"s-round"], [1,3,1,1,"s-rect"],
-  [2,3,1,2,"s-arch"], [5,3,1,2,"s-rect"],  [0,4,1,1,"s-round"],
-  [1,4,1,2,"s-rect"], [3,4,2,1,"s-pill"],  [0,5,1,1,"s-leaf"],
-  [2,5,1,1,"s-round"],[3,5,2,1,"s-soft"],  [5,5,1,1,"s-rect"]
+  /* two 2x2 anchors, then 1x2 / 2x1 / 1x1 filling around them so
+     no piece dwarfs another and every edge meets a neighbour. */
+  [0,0,2,2,"s-soft"],  [2,0,1,2,"s-soft"],  [3,0,2,1,"s-arch"],
+  [5,0,1,2,"s-soft"],  [3,1,1,1,"s-round"], [4,1,1,1,"s-soft"],
+  [0,2,1,1,"s-soft"],  [1,2,2,1,"s-soft"],  [3,2,1,2,"s-soft"],
+  [4,2,2,1,"s-soft"],  [0,3,2,1,"s-soft"],  [2,3,1,1,"s-round"],
+  [4,3,1,1,"s-soft"],  [5,3,1,1,"s-soft"],  [0,4,1,2,"s-arch"],
+  [1,4,2,1,"s-soft"],  [3,4,1,1,"s-soft"],  [4,4,2,2,"s-soft"],
+  [1,5,1,1,"s-round"], [2,5,1,1,"s-soft"],  [3,5,1,1,"s-soft"]
 ];
 const TINTS = ["#3355b4","#d94f30","#e6a62b","#1f7d63","#7a2b4a"];
 
@@ -423,7 +803,7 @@ function build(){
         const f = document.createElement("div");
         f.className = "frame";
         f.style.setProperty("--rot", (Math.sin(i*13.37)*1.6).toFixed(2)+"deg");
-        f.innerHTML = `<img alt="" loading="lazy" decoding="async">`;
+        f.innerHTML = `<img alt="" loading="lazy" decoding="async"><div class="pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg></div>`;
         cell.appendChild(f);
         tile.appendChild(cell);
         cells.push(cell);
@@ -713,27 +1093,330 @@ addEventListener("keydown", e=>{
    ============================================================ */
 const hero = document.getElementById("hero");
 const door = document.getElementById("door");
+const tools = document.getElementById("tools");
 door.style.opacity = 0;
 door.style.pointerEvents = "none";
 door.style.transition = "opacity .5s ease, transform .4s var(--ease), background .3s, border-color .3s, box-shadow .4s";
+tools.style.opacity = 0;
+tools.style.transition = "opacity .5s ease";
 
 function walkIn(){
   hero.classList.add("gone");
   tX -= 90; tY -= 60;
-  setTimeout(()=>{ door.style.opacity = 1; door.style.pointerEvents = "auto"; }, 500);
+  setTimeout(()=>{
+    door.style.opacity = 1; door.style.pointerEvents = "auto";
+    tools.style.display = "flex"; tools.style.opacity = 1;
+  }, 500);
   removeEventListener("wheel", walkIn);
 }
 function walkOut(){
+  if(document.body.classList.contains("selecting")) exitSelect();
   hero.classList.remove("gone");
-  /* ease the plane back to the origin */
   tX = 0; tY = 0;
   door.style.opacity = 0; door.style.pointerEvents = "none";
-  /* rearm the wheel-to-enter shortcut once the hero is up again */
+  tools.style.opacity = 0;
+  setTimeout(()=>{ tools.style.display = "none"; }, 500);
   addEventListener("wheel", walkIn, {once:true, passive:true});
 }
 document.getElementById("enter").addEventListener("click", walkIn);
 door.addEventListener("click", walkOut);
 addEventListener("wheel", walkIn, {once:true, passive:true});
+
+/* ============================================================
+   8. MODALS — shared open/close for contact, keepsake, share
+   ============================================================ */
+function openModal(id){ document.getElementById(id).classList.add("open"); }
+function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+document.querySelectorAll(".modal").forEach(m=>{
+  m.addEventListener("click", e=>{
+    if(e.target === m || e.target.closest("[data-close]")) m.classList.remove("open");
+  });
+});
+addEventListener("keydown", e=>{
+  if(e.key !== "Escape") return;
+  document.querySelectorAll(".modal.open").forEach(m=>m.classList.remove("open"));
+});
+document.getElementById("btn-contact").addEventListener("click", ()=>openModal("modal-contact"));
+
+/* ============================================================
+   9. TOAST
+   ============================================================ */
+const toast = document.getElementById("toast");
+let toastT;
+function say(msg){
+  toast.textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>toast.classList.remove("show"), 1800);
+}
+
+/* ============================================================
+   10. KEEPSAKE MODE — pick photos, then compose a puzzle collage
+   ============================================================ */
+const CAPTION = "I attended Boundless Love Conference (Sip & Paint 1.0) in Moscow. #tmgm #tmgmmoscow #love";
+const MAX_PICK = 6;
+const picked = []; /* array of photo indexes, in click order */
+const btnKeep = document.getElementById("btn-keep");
+const tray = document.getElementById("tray");
+const trayNum = document.getElementById("tray-num");
+const trayThumbs = document.getElementById("tray-thumbs");
+const trayDo = document.getElementById("tray-do");
+const trayCancel = document.getElementById("tray-cancel");
+
+btnKeep.addEventListener("click", ()=>{
+  document.body.classList.toggle("selecting");
+  btnKeep.classList.toggle("active", document.body.classList.contains("selecting"));
+});
+trayCancel.addEventListener("click", exitSelect);
+function exitSelect(){
+  document.body.classList.remove("selecting");
+  btnKeep.classList.remove("active");
+  picked.length = 0;
+  refreshChosen();
+  renderTray();
+}
+function renderTray(){
+  trayNum.textContent = picked.length;
+  trayThumbs.innerHTML = "";
+  picked.forEach((idx, pos)=>{
+    const t = document.createElement("div");
+    t.className = "t";
+    t.style.backgroundImage = `url("${PHOTOS[idx].src}")`;
+    t.title = "Remove";
+    t.addEventListener("click", ()=>{
+      picked.splice(pos, 1);
+      refreshChosen();
+      renderTray();
+    });
+    trayThumbs.appendChild(t);
+  });
+  trayDo.disabled = picked.length < 3;
+}
+function refreshChosen(){
+  /* every visible cell that shows a picked photo gets the chosen ring.
+     because the plane tiles the same photos across copies, all copies
+     of a picked photo light up together. */
+  document.querySelectorAll(".cell").forEach(cell=>{
+    const idx = +cell.dataset.idx;
+    cell.classList.toggle("chosen", picked.includes(idx));
+  });
+}
+/* intercept pointerup on the stage while in selecting mode.
+   This runs BEFORE the lightbox opener because we registered it earlier. */
+stage.addEventListener("pointerup", e=>{
+  if(!document.body.classList.contains("selecting")) return;
+  if(moved > 8) return;
+  const hit = document.elementFromPoint(e.clientX, e.clientY);
+  const cell = hit && hit.closest(".cell");
+  if(!cell) return;
+  e.stopImmediatePropagation();  /* don't also open the lightbox */
+  const idx = +cell.dataset.idx;
+  const at = picked.indexOf(idx);
+  if(at >= 0){
+    picked.splice(at, 1);
+  } else if(picked.length < MAX_PICK){
+    picked.push(idx);
+  } else {
+    say("Six is the max");
+  }
+  refreshChosen();
+  renderTray();
+}, true);  /* capture, so it beats the lightbox handler */
+
+/* Rebuild the chosen highlights every time tiles wrap and get new photos */
+const origFill = fill;
+fill = function(tile){
+  origFill(tile);
+  refreshChosen();
+};
+
+/* ============================================================
+   11. COLLAGE COMPOSITE — canvas layouts by count
+   ============================================================ */
+/* layouts are unit rectangles inside a 6x6 grid. one entry per photo count. */
+const LAYOUTS = {
+  3: [[0,0,4,6],[4,0,2,3],[4,3,2,3]],
+  4: [[0,0,3,3],[3,0,3,3],[0,3,3,3],[3,3,3,3]],
+  5: [[0,0,4,4],[4,0,2,2],[4,2,2,2],[0,4,3,2],[3,4,3,2]],
+  6: [[0,0,2,3],[2,0,2,3],[4,0,2,3],[0,3,2,3],[2,3,2,3],[4,3,2,3]]
+};
+const keepCanvas = document.getElementById("keep-canvas");
+const kctx = keepCanvas.getContext("2d");
+let lastBlob = null;
+
+trayDo.addEventListener("click", async ()=>{
+  const layout = LAYOUTS[picked.length] || LAYOUTS[6];
+  const size = 1200, unit = size / 6;
+  const pad = 12;
+
+  kctx.fillStyle = "#efe7d8";
+  kctx.fillRect(0, 0, size, size);
+
+  /* draw each picked photo cover-cropped into its layout cell */
+  const imgs = await Promise.all(picked.map(idx=>loadImg(PHOTOS[idx].src)));
+  layout.forEach((rect, i)=>{
+    const [x, y, w, h] = rect;
+    const rx = x*unit + pad, ry = y*unit + pad;
+    const rw = w*unit - pad*2, rh = h*unit - pad*2;
+    drawCover(kctx, imgs[i], rx, ry, rw, rh, 6);
+  });
+
+  /* signature strip at the bottom — logo left, event line right */
+  const stripH = 90;
+  kctx.fillStyle = "rgba(11,10,14,.90)";
+  kctx.fillRect(0, size - stripH, size, stripH);
+
+  const logoImg = await loadImg("logo.png");
+  const logoH = 62;
+  const logoW = logoImg.naturalWidth * (logoH / logoImg.naturalHeight);
+  kctx.drawImage(logoImg, 24, size - stripH + (stripH - logoH)/2, logoW, logoH);
+
+  kctx.fillStyle = "#e6a62b";
+  kctx.font = "500 15px 'IBM Plex Mono', monospace";
+  kctx.textAlign = "right";
+  kctx.textBaseline = "middle";
+  kctx.fillText("Sip & Paint 1.0 · Moscow · 18 July 2026", size - 30, size - stripH/2);
+  kctx.textAlign = "left";
+
+  try{
+    await new Promise((res,rej)=>keepCanvas.toBlob(b=>{
+      if(!b) return rej(new Error("blob failed"));
+      lastBlob = b; res();
+    }, "image/png"));
+    openModal("modal-keep");
+  } catch(err){
+    say("Could not build image (host from a web server)");
+  }
+});
+
+function loadImg(src){
+  return new Promise((res)=>{
+    const im = new Image();
+    im.onload = ()=>res(im);
+    im.onerror = ()=>{
+      /* draw a coloured card as fallback so a missing photo doesn't break composite */
+      const c = document.createElement("canvas");
+      c.width = 600; c.height = 600;
+      const g = c.getContext("2d");
+      const grad = g.createLinearGradient(0,0,600,600);
+      grad.addColorStop(0, "#3355b4"); grad.addColorStop(1, "#14111a");
+      g.fillStyle = grad; g.fillRect(0,0,600,600);
+      const im2 = new Image();
+      im2.onload = ()=>res(im2);
+      im2.src = c.toDataURL();
+    };
+    im.src = src;
+  });
+}
+function drawCover(g, img, x, y, w, h, radius){
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  const scale = Math.max(w/iw, h/ih);
+  const dw = iw*scale, dh = ih*scale;
+  const dx = x + (w - dw)/2, dy = y + (h - dh)/2;
+  g.save();
+  roundRectPath(g, x, y, w, h, radius);
+  g.clip();
+  g.drawImage(img, dx, dy, dw, dh);
+  g.restore();
+}
+function roundRectPath(g, x, y, w, h, r){
+  g.beginPath();
+  g.moveTo(x + r, y);
+  g.arcTo(x + w, y, x + w, y + h, r);
+  g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r);
+  g.arcTo(x, y, x + w, y, r);
+  g.closePath();
+}
+
+document.getElementById("keep-download").addEventListener("click", ()=>{
+  if(!lastBlob) return;
+  downloadBlob(lastBlob, "boundless-love-keepsake.png");
+});
+document.getElementById("keep-share").addEventListener("click", ()=>{
+  if(!lastBlob) return;
+  openShare(lastBlob, "boundless-love-keepsake.png");
+});
+
+function downloadBlob(blob, name){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+/* ============================================================
+   12. SHARE SHEET — web share on mobile, per-platform links on desktop
+   ============================================================ */
+const modalShare = document.getElementById("modal-share");
+const shareCaption = document.getElementById("share-caption");
+const shareGrid = document.getElementById("share-grid");
+let currentShare = null; /* {blob, name} */
+
+async function openShare(blob, name){
+  currentShare = {blob, name};
+  shareCaption.textContent = CAPTION;
+
+  /* native share sheet if the browser supports sharing files (most mobile) */
+  const file = new File([blob], name, {type: "image/png"});
+  const canFileShare = navigator.canShare && navigator.canShare({files:[file]});
+
+  if(canFileShare){
+    try{
+      await navigator.share({
+        files: [file],
+        text: CAPTION,
+        title: "Boundless Love Conference"
+      });
+      return; /* success, done */
+    } catch(err){
+      /* user cancelled or share failed, fall through to the sheet */
+    }
+  }
+  openModal("modal-share");
+}
+
+/* wire the fallback sheet buttons */
+shareGrid.querySelector("[data-copy]").addEventListener("click", async ()=>{
+  try{
+    await navigator.clipboard.writeText(CAPTION);
+    say("Caption copied");
+  } catch{ say("Copy failed"); }
+});
+shareGrid.querySelector("[data-download]").addEventListener("click", ()=>{
+  if(currentShare) downloadBlob(currentShare.blob, currentShare.name);
+});
+/* platform URLs. These open the platform's composer with the caption
+   prefilled. Users then attach the downloaded image themselves —
+   no web platform allows silently attaching a file to a share URL. */
+function buildShareLinks(){
+  const txt = encodeURIComponent(CAPTION);
+  const url = encodeURIComponent(location.href);
+  shareGrid.querySelector("[data-plat='wa']").href = `https://wa.me/?text=${txt}`;
+  shareGrid.querySelector("[data-plat='tg']").href = `https://t.me/share/url?url=${url}&text=${txt}`;
+  shareGrid.querySelector("[data-plat='x']").href  = `https://twitter.com/intent/tweet?text=${txt}`;
+  shareGrid.querySelector("[data-plat='fb']").href = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${txt}`;
+}
+buildShareLinks();
+
+/* lightbox share — single photo. Fetch the image as a blob then share. */
+document.getElementById("look-share").addEventListener("click", async ()=>{
+  const src = lookImg.src;
+  const name = `boundless-love-${PHOTOS[at].no}.png`;
+  try{
+    const resp = await fetch(src);
+    const blob = await resp.blob();
+    openShare(blob, name);
+  } catch{
+    /* if the image can't be fetched (rare), still open the sheet without a blob */
+    currentShare = null;
+    shareCaption.textContent = CAPTION;
+    openModal("modal-share");
+  }
+});
+
 
 let rt;
 addEventListener("resize", ()=>{
