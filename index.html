@@ -280,8 +280,9 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
   display:block;
   box-shadow:0 40px 90px rgba(0,0,0,.8);
 }
+.look-actions{display:inline-flex;gap:8px;flex-wrap:wrap;}
 .look-cap{
-  display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
   margin-top:14px;
   font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;
   color:var(--gesso-dim);
@@ -572,6 +573,36 @@ body.selecting .tray{transform:translate(-50%,0);}
   filter:drop-shadow(0 4px 16px rgba(107,49,181,.25));
 }
 
+/* ============================================================
+   REACH LIST — flex row with a shrinkable text column so long
+   emails or numbers wrap instead of blowing out the modal
+   ============================================================ */
+.reach .rtext{flex:1;min-width:0;}
+.reach .rlabel{display:block;margin-bottom:2px;}
+.reach .rval{display:block;word-break:break-word;overflow-wrap:anywhere;}
+
+/* ============================================================
+   MOBILE — tray stacks, reach text scales, cell chrome shrinks
+   ============================================================ */
+@media(max-width:640px){
+  .tray{
+    flex-wrap:wrap;
+    justify-content:center;
+    width:calc(100vw - 24px);
+    max-width:420px;
+    padding:14px 14px 12px;
+    gap:10px;
+    bottom:16px;
+  }
+  .tray-count{flex-basis:100%;text-align:center;}
+  .tray-thumbs{flex-basis:100%;justify-content:center;flex-wrap:wrap;}
+  .tray-thumbs .t{width:36px;height:36px;}
+  #tray-do, #tray-cancel{flex:1;min-width:0;padding:12px 10px;}
+  .reach a{padding:14px 14px;}
+  .reach .ico{width:36px;height:36px;}
+  .reach .rval{font-size:13px;}
+}
+
 </style>
 </head>
 <body>
@@ -650,15 +681,24 @@ body.selecting .tray{transform:translate(-50%,0);}
     <div class="reach">
       <a href="mailto:tmgmmoscowchapter@gmail.com">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg></span>
-        <span><span class="rlabel">Email</span><br><span class="rval">tmgmmoscowchapter@gmail.com</span></span>
+        <span class="rtext">
+          <span class="rlabel">Email</span>
+          <span class="rval">tmgmmoscowchapter@gmail.com</span>
+        </span>
       </a>
       <a href="https://wa.me/79779696822" target="_blank" rel="noopener">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 0 1-11.9 6.9L4 20l1.2-4A8 8 0 1 1 20 12z"/></svg></span>
-        <span><span class="rlabel">WhatsApp Deborah</span><br><span class="rval">+7 977 969 6822</span></span>
+        <span class="rtext">
+          <span class="rlabel">WhatsApp Deborah</span>
+          <span class="rval">+7 977 969 6822</span>
+        </span>
       </a>
       <a href="tel:+79779696822">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.4 2.1L8 9.6a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z"/></svg></span>
-        <span><span class="rlabel">Call Deborah</span><br><span class="rval">+7 977 969 6822</span></span>
+        <span class="rtext">
+          <span class="rlabel">Call Deborah</span>
+          <span class="rval">+7 977 969 6822</span>
+        </span>
       </a>
     </div>
   </div>
@@ -733,10 +773,16 @@ body.selecting .tray{transform:translate(-50%,0);}
     <img id="look-img" alt="">
     <div class="look-cap">
       <span id="look-what"></span>
-      <button class="tool" id="look-share" style="padding:6px 12px;font-size:11px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4"/><path d="M8.6 13.5l6.8 4"/></svg>
-        Share
-      </button>
+      <span class="look-actions">
+        <button class="tool" id="look-download" style="padding:6px 12px;font-size:11px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M4 21h16"/></svg>
+          Download
+        </button>
+        <button class="tool" id="look-share" style="padding:6px 12px;font-size:11px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4"/><path d="M8.6 13.5l6.8 4"/></svg>
+          Share
+        </button>
+      </span>
       <b id="look-no"></b>
     </div>
   </div>
@@ -1261,22 +1307,9 @@ trayDo.addEventListener("click", async ()=>{
     drawCover(kctx, imgs[i], rx, ry, rw, rh, 6);
   });
 
-  /* signature strip at the bottom — logo left, event line right */
-  const stripH = 90;
-  kctx.fillStyle = "rgba(11,10,14,.90)";
-  kctx.fillRect(0, size - stripH, size, stripH);
-
+  /* branded strip along the bottom */
   const logoImg = await loadImg("logo.png");
-  const logoH = 62;
-  const logoW = logoImg.naturalWidth * (logoH / logoImg.naturalHeight);
-  kctx.drawImage(logoImg, 24, size - stripH + (stripH - logoH)/2, logoW, logoH);
-
-  kctx.fillStyle = "#e6a62b";
-  kctx.font = "500 15px 'IBM Plex Mono', monospace";
-  kctx.textAlign = "right";
-  kctx.textBaseline = "middle";
-  kctx.fillText("Sip & Paint 1.0 · Moscow · 18 July 2026", size - 30, size - stripH/2);
-  kctx.textAlign = "left";
+  drawStrip(kctx, 0, size - 90, size, 90, logoImg);
 
   try{
     await new Promise((res,rej)=>keepCanvas.toBlob(b=>{
@@ -1288,6 +1321,45 @@ trayDo.addEventListener("click", async ()=>{
     say("Could not build image (host from a web server)");
   }
 });
+
+/* Shared signature strip. Also used for individually branded photo
+   downloads so every image that leaves the site carries the mark. */
+function drawStrip(g, x, y, w, h, logoImg){
+  g.fillStyle = "rgba(11,10,14,.92)";
+  g.fillRect(x, y, w, h);
+  const logoH = Math.round(h * 0.68);
+  const logoW = logoImg.naturalWidth * (logoH / logoImg.naturalHeight);
+  const pad = Math.round(h * 0.22);
+  g.drawImage(logoImg, x + pad, y + (h - logoH)/2, logoW, logoH);
+  g.fillStyle = "#e6a62b";
+  g.font = `500 ${Math.max(12, Math.round(h * 0.22))}px 'IBM Plex Mono', ui-monospace, monospace`;
+  g.textAlign = "right";
+  g.textBaseline = "middle";
+  g.fillText("Sip & Paint 1.0 · Moscow · 18 July 2026", x + w - pad, y + h/2);
+  g.textAlign = "left";
+}
+
+/* Take a photo url, return a PNG blob with the branded strip
+   below it. The strip height scales with image width so it looks
+   consistent whether the source is 800px or 2400px wide. */
+async function brandImage(src){
+  const img = await loadImg(src);
+  const logoImg = await loadImg("logo.png");
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  const stripH = Math.max(64, Math.round(iw * 0.075));
+
+  const c = document.createElement("canvas");
+  c.width = iw;
+  c.height = ih + stripH;
+  const g = c.getContext("2d");
+  g.drawImage(img, 0, 0, iw, ih);
+  drawStrip(g, 0, ih, iw, stripH, logoImg);
+
+  return new Promise((res, rej)=>{
+    c.toBlob(b => b ? res(b) : rej(new Error("blob failed")), "image/png");
+  });
+}
 
 function loadImg(src){
   return new Promise((res)=>{
@@ -1401,19 +1473,27 @@ function buildShareLinks(){
 }
 buildShareLinks();
 
-/* lightbox share — single photo. Fetch the image as a blob then share. */
+/* lightbox share + download — brand the photo first, then hand it off.
+   Every image that leaves the site carries the strip. */
 document.getElementById("look-share").addEventListener("click", async ()=>{
-  const src = lookImg.src;
   const name = `boundless-love-${PHOTOS[at].no}.png`;
+  say("Preparing image");
   try{
-    const resp = await fetch(src);
-    const blob = await resp.blob();
+    const blob = await brandImage(lookImg.src);
     openShare(blob, name);
   } catch{
-    /* if the image can't be fetched (rare), still open the sheet without a blob */
-    currentShare = null;
-    shareCaption.textContent = CAPTION;
-    openModal("modal-share");
+    say("Could not prepare image");
+  }
+});
+document.getElementById("look-download").addEventListener("click", async ()=>{
+  const name = `boundless-love-${PHOTOS[at].no}.png`;
+  say("Preparing image");
+  try{
+    const blob = await brandImage(lookImg.src);
+    downloadBlob(blob, name);
+    say("Downloaded");
+  } catch{
+    say("Could not prepare image");
   }
 });
 
