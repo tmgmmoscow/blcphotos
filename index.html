@@ -601,6 +601,23 @@ body.selecting .tray{transform:translate(-50%,0);}
   .reach a{padding:14px 14px;}
   .reach .ico{width:36px;height:36px;}
   .reach .rval{font-size:13px;}
+
+  /* Lightbox caption: on narrow screens the two action buttons were
+     being squeezed into ~80px between the label and the number and
+     wrapping into a cramped column. Push actions to their own full
+     row and give the buttons real breathing room. */
+  .look-cap{flex-wrap:wrap;justify-content:space-between;gap:10px;}
+  .look-actions{
+    flex-basis:100%;
+    order:3;
+    justify-content:center;
+    gap:10px;
+    margin-top:2px;
+  }
+  #look-download, #look-share{
+    padding:10px 18px !important;
+    font-size:12px !important;
+  }
 }
 
 </style>
