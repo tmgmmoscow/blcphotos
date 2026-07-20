@@ -288,14 +288,30 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
   color:var(--gesso-dim);
 }
 .look-cap b{color:var(--ochre);font-weight:500;}
-.look-x{position:absolute;top:22px;right:24px;font-size:20px;line-height:1;padding:10px;color:var(--gesso);opacity:.7;}
+.look-x{position:absolute;top:22px;right:24px;font-size:20px;line-height:1;padding:10px;color:var(--gesso);opacity:.7;z-index:3;}
 .look-x:hover{opacity:1;}
 .look-arrow{
   position:absolute;top:50%;transform:translateY(-50%);
-  font-size:30px;padding:18px;opacity:.55;
+  display:flex;align-items:center;gap:8px;
+  padding:12px 20px;
+  background:rgba(19,16,25,.85);
+  backdrop-filter:blur(14px);
+  border:1px solid rgba(239,231,216,.16);
+  border-radius:999px;
+  color:var(--gesso);
+  font-size:12px;letter-spacing:.04em;
+  z-index:2;
+  transition:transform .3s var(--ease), background .3s, border-color .3s, color .3s;
 }
-.look-arrow:hover{opacity:1;}
-.look-prev{left:2vw;} .look-next{right:2vw;}
+.look-arrow:hover{
+  background:var(--gesso);color:var(--ink);border-color:var(--gesso);
+  transform:translateY(-50%) scale(1.05);
+}
+.look-arrow:disabled{opacity:.35;cursor:not-allowed;}
+.look-arrow:disabled:hover{background:rgba(19,16,25,.85);color:var(--gesso);transform:translateY(-50%);}
+.look-arrow svg{width:14px;height:14px;flex:none;}
+.look-prev{left:3vw;}
+.look-next{right:3vw;}
 
 /* ============================================================
    RESPONSIVE + A11Y
@@ -621,6 +637,17 @@ body.selecting .tray{transform:translate(-50%,0);}
     font-size:12px !important;
     letter-spacing:.02em;
   }
+
+  /* Prev/next: sides get tight on phones, so hide the label and
+     collapse to a circular icon button. */
+  .look-arrow{
+    padding:12px;
+    gap:0;
+  }
+  .look-arrow span{display:none;}
+  .look-arrow svg{width:16px;height:16px;}
+  .look-prev{left:8px;}
+  .look-next{right:8px;}
 }
 
 </style>
@@ -788,7 +815,10 @@ body.selecting .tray{transform:translate(-50%,0);}
 
 <div class="look" id="look">
   <button class="look-x" id="look-x" aria-label="Close">&#10005;</button>
-  <button class="look-arrow look-prev" id="look-prev" aria-label="Previous">&#8249;</button>
+  <button class="look-arrow look-prev" id="look-prev" aria-label="Previous photo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    <span>Previous</span>
+  </button>
   <div class="look-inner">
     <img id="look-img" alt="">
     <div class="look-cap">
@@ -806,7 +836,10 @@ body.selecting .tray{transform:translate(-50%,0);}
       <b id="look-no"></b>
     </div>
   </div>
-  <button class="look-arrow look-next" id="look-next" aria-label="Next">&#8250;</button>
+  <button class="look-arrow look-next" id="look-next" aria-label="Next photo">
+    <span>Next</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
 </div>
 
 <script>
@@ -1355,7 +1388,7 @@ function drawStrip(g, x, y, w, h, logoImg){
   g.font = `500 ${Math.max(12, Math.round(h * 0.22))}px 'IBM Plex Mono', ui-monospace, monospace`;
   g.textAlign = "right";
   g.textBaseline = "middle";
-  g.fillText("Sip & Paint 1.0 · Moscow · 18 July 2026", x + w - pad, y + h/2);
+  g.fillText("Sip & Paint 1.0 · TMGM Moscow · 18 July 2026", x + w - pad, y + h/2);
   g.textAlign = "left";
 }
 
